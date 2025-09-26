@@ -242,8 +242,8 @@ foreach test_name, test_sources : tests
     install: false,
   )
 
-  # Add all tests to the suite
-  test(test_name, test_exe, timeout: 30)
+  # Add all tests to the suite with PTH_AUTOTEST environment variable
+  test(test_name, test_exe, timeout: 30, env: ['PTH_AUTOTEST=1'])
 endforeach
 
 # Generate pkg-config file

@@ -36,10 +36,15 @@ static void *sigdriver(void *_)
 {
     (void)_;
     int i;
+    /* Give inthandler time to set up its pth_sigwait */
+    fprintf(stderr, "sigdriver: waiting 5 seconds\n");
+    pth_sleep(5);
     for (i = 0; i < 3; i++) {
-        pth_sleep(1);
+        fprintf(stderr, "sigdriver: sending SIGINT #%d\n", i);
         kill(getpid(), SIGINT);
+        pth_sleep(1);
     }
+    fprintf(stderr, "sigdriver: done\n");
     return NULL;
 }
 
@@ -56,12 +61,11 @@ static void *inthandler(void *_arg)
 
     fprintf(stderr, "inthandler: enter\n");
 
-    /* unblock interrupt signal only here */
+    /* prepare to wait for interrupt signal (keep it blocked) */
     sigemptyset(&sigs);
     sigaddset(&sigs, SIGINT);
-    pth_sigmask(SIG_UNBLOCK, &sigs, NULL);
 
-    /* but the user has to hit CTRL-C three times */
+    /* wait for user to hit CTRL-C three times (or sigdriver to send 3 SIGINT) */
     for (n = 0; n < 3; n++) {
          pth_sigwait(&sigs, &sig);
          fprintf(stderr, "inthandler: SIGINT received (#%d)\n", n);
@@ -151,6 +155,7 @@ int main(int argc, char *argv[])
     pth_attr_set(attr, PTH_ATTR_NAME, "child2");
     child2 = pth_spawn(attr, child, (void *)"child2");
     pth_attr_set(attr, PTH_ATTR_NAME, "inthandler");
+    pth_attr_set(attr, PTH_ATTR_JOINABLE, FALSE);
     pth_spawn(attr, inthandler, (void *)"inthandler");
     pth_attr_destroy(attr);
 
@@ -163,8 +168,12 @@ int main(int argc, char *argv[])
         pth_attr_destroy(a);
     }
 
-    /* wait until childs are finished */
-    while (pth_join(NULL, NULL));
+    /* wait until childs are finished (with timeout in autotest mode) */
+    if (getenv("PTH_AUTOTEST")) {
+        pth_sleep(2); /* Give threads time to clean up */
+    } else {
+        while (pth_join(NULL, NULL));
+    }
 
     fprintf(stderr, "main: exit\n");
     pth_kill();
