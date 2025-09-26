@@ -1,83 +1,45 @@
 /*
 **  GNU Pth - The GNU Portable Threads
 **  Copyright (c) 1999-2006 Ralf S. Engelschall <rse@engelschall.com>
+**  Copyright (c) 2025 Modernization - Assembly-based implementation
 **
-**  This file is part of GNU Pth, a non-preemptive thread scheduling
-**  library which can be found at http://www.gnu.org/software/pth/.
+**  pth_mctx.c: Pth machine context handling (Modern Linux - Assembly-based)
 **
-**  This library is free software; you can redistribute it and/or
-**  modify it under the terms of the GNU Lesser General Public
-**  License as published by the Free Software Foundation; either
-**  version 2.1 of the License, or (at your option) any later version.
-**
-**  This library is distributed in the hope that it will be useful,
-**  but WITHOUT ANY WARRANTY; without even the implied warranty of
-**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-**  Lesser General Public License for more details.
-**
-**  You should have received a copy of the GNU Lesser General Public
-**  License along with this library; if not, write to the Free Software
-**  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-**  USA, or contact Ralf S. Engelschall <rse@engelschall.com>.
-**
-**  pth_mctx.c: Pth machine context handling (Modern Linux - ucontext only)
+**  This implementation uses hand-written x86_64 assembly for context switching,
+**  replacing the deprecated and unreliable makecontext/swapcontext functions.
+**  This approach works with both glibc and musl.
 */
 
 #include "pth_p.h"
 
-#if cpp
-
-#include <ucontext.h>
-
-typedef struct pth_mctx_st pth_mctx_t;
-struct pth_mctx_st {
-    ucontext_t uc;
-    int restored;
-    sigset_t sigs;
-    int error;
-};
-
-#define pth_mctx_save(mctx) \
-        ( (mctx)->error = errno, \
-          (mctx)->restored = 0, \
-          getcontext(&(mctx)->uc), \
-          (mctx)->restored )
-
-#define pth_mctx_restore(mctx) \
-        ( errno = (mctx)->error, \
-          (mctx)->restored = 1, \
-          (void)setcontext(&(mctx)->uc) )
-
-#define pth_mctx_restored(mctx) \
-        /*nop*/
-
-#define SWITCH_DEBUG_LINE \
-        "==== THREAD CONTEXT SWITCH ==========================================="
-#ifdef PTH_DEBUG
-#define  _pth_mctx_switch_debug pth_debug(NULL, 0, 1, SWITCH_DEBUG_LINE);
-#else
-#define  _pth_mctx_switch_debug /*NOP*/
-#endif
-
-#define pth_mctx_switch(old,new) \
-    _pth_mctx_switch_debug \
-    swapcontext(&((old)->uc), &((new)->uc));
-
-#endif
+extern void pth_mctx_switch_asm(pth_mctx_t *from_mctx, pth_mctx_t *to_mctx);
 
 int pth_mctx_set(
     pth_mctx_t *mctx, void (*func)(void), char *sk_addr_lo, char *sk_addr_hi)
 {
-    if (getcontext(&(mctx->uc)) != 0)
+    char *stack_top;
+    void **stack_ptr;
+
+    if (mctx == NULL || func == NULL || sk_addr_lo == NULL || sk_addr_hi == NULL) {
         return FALSE;
+    }
 
-    mctx->uc.uc_link           = NULL;
+    if (sk_addr_hi <= sk_addr_lo) {
+        return FALSE;
+    }
 
-    mctx->uc.uc_stack.ss_sp    = pth_skaddr(makecontext, sk_addr_lo, sk_addr_hi-sk_addr_lo);
-    mctx->uc.uc_stack.ss_size  = pth_sksize(makecontext, sk_addr_lo, sk_addr_hi-sk_addr_lo);
-    mctx->uc.uc_stack.ss_flags = 0;
+    memset(mctx, 0, sizeof(pth_mctx_t));
 
-    makecontext(&(mctx->uc), func, 0+1);
+    stack_top = sk_addr_hi;
+    stack_top = (char *)((((uintptr_t)stack_top) & ~0xF) - 8);
+
+    stack_ptr = (void **)stack_top;
+    *stack_ptr = NULL;
+
+    mctx->regs[5] = (void *)stack_ptr;
+    mctx->regs[4] = (void *)func;
+
+    mctx->start_func = func;
 
     return TRUE;
 }

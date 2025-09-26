@@ -178,6 +178,7 @@ pth_sources = files(
   'pth_high.c',
   'pth_lib.c',
   'pth_mctx.c',
+  'pth_mctx_swap.S',
   'pth_msg.c',
   'pth_pqueue.c',
   'pth_ring.c',
