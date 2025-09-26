@@ -137,7 +137,24 @@ int main(int argc, char *argv[])
     ev = pth_event(PTH_EVENT_MSG, mp);
 
     evt = NULL;
-    for (;;) {
+    if (getenv("PTH_AUTOTEST")) {
+        /* Non-interactive self-test: send a line, verify uppercase, exit */
+        strcpy(caLine, "hello world");
+        fprintf(stderr, "main: out --> <%s>\n", caLine);
+        q->string = caLine;
+        q->head.m_replyport = mp;
+        pth_msgport_put(mp_worker, (pth_message_t *)q);
+        pth_wait(ev);
+        q = (struct query *)pth_msgport_get(mp);
+        fprintf(stderr, "main: in <-- <%s>\n", q->string);
+        if (strcmp(q->string, "HELLO WORLD") != 0) {
+            fprintf(stderr, "main: unexpected transform result\n");
+            pth_kill();
+            return 1;
+        }
+        fprintf(stderr, "main: quit\n");
+    }
+    else for (;;) {
         if (evt == NULL)
             evt = pth_event(PTH_EVENT_TIME, pth_timeout(20,0));
         else

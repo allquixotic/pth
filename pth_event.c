@@ -95,8 +95,10 @@ pth_event_t pth_event(unsigned long spec, ...)
         /* allocate new dynamic event structure */
         ev = (pth_event_t)malloc(sizeof(struct pth_event_st));
     }
-    if (ev == NULL)
+    if (ev == NULL) {
+        va_end(ap);
         return pth_error((pth_event_t)NULL, errno);
+    }
 
     /* create new event ring out of event or insert into existing ring */
     if (spec & PTH_MODE_CHAIN) {

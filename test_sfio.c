@@ -31,12 +31,14 @@
 #include <unistd.h>
 
 #include "pth.h"
+#include <unistd.h>
 
 #if PTH_EXT_SFIO
 
 /* a worker thread */
 static void *worker(void *_dummy)
 {
+    int processed = 0;
     char line[1024];
     int c;
     int i;
@@ -52,6 +54,7 @@ static void *worker(void *_dummy)
             line[i++] = (char)c;
         }
         sfprintf(sfstderr, "you entered '%s' on sfstdin\n", line);
+        if (getenv("PTH_AUTOTEST") && ++processed >= 1) break;
     }
     return NULL;
 }
@@ -103,6 +106,7 @@ int main(int argc, char *argv[])
     sfprintf(sfstderr, "way does not block. Instead only one thread blocks.\n");
     sfprintf(sfstderr, "\n");
 
+    if (getenv("PTH_AUTOTEST")) { int fds[2]; if (pipe(fds)==0) { dup2(fds[0], 0); close(fds[0]); write(fds[1], "hello\n", 6); close(fds[1]); } }
     a = pth_attr_new();
     pth_attr_set(a, PTH_ATTR_NAME, "worker");
     pth_attr_set(a, PTH_ATTR_JOINABLE, FALSE);

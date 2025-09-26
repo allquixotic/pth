@@ -1,0 +1,104 @@
+# GNU Pth - Generated Files to Ignore
+
+# Autotools generated files
+/configure
+/config.guess
+/config.sub
+/install-sh
+/missing
+/compile
+/depcomp
+/ltmain.sh
+/aclocal.m4
+/autom4te.cache/
+/config.h
+/config.h.in
+/config.h.in~
+/config.log
+/config.status
+/stamp-h1
+/libtool
+
+# Automake/Makefile generated files
+/Makefile
+/Makefile.in
+
+# Autoheader generated files
+/pth_acdef.h
+/pth_acmac.h
+/pth_p.h
+
+# Build artifacts
+*.o
+*.lo
+*.la
+*.a
+*.so
+*.so.*
+/.libs/
+/.deps/
+/stamp-*
+
+# Generated executables and tests
+/test_std
+/test_mp
+/test_misc
+/test_philo
+/test_sig
+/test_select
+/test_httpd
+/test_sfio
+/test_uctx
+/test_pthread
+
+# Generated headers and config
+/pth.h
+/pth-config
+
+# Build output files
+*.out
+/build*.out
+/configure*.out
+/test*.out
+/check.out
+
+# Static analysis files
+/compile_commands.json
+/clang-tidy-analysis.txt
+/cppcheck-analysis.xml
+/cppcheck-summary.txt
+
+# Backup and temporary files
+*~
+*.bak
+*.orig
+*.rej
+.#*
+\#*\#
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation build artifacts (if any)
+/doc/*.html
+/doc/*.pdf
+/doc/*.ps
+/doc/*.dvi
+
+# Distribution files
+/*.tar.gz
+/*.tar.bz2
+/*.tar.xz
+/pth-*.tar.*
+
+# Package build directories
+/debian/
+/rpm/

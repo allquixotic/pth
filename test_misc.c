@@ -119,9 +119,11 @@ int main(int argc, char *argv[])
     pth_attr_set(t_attr, PTH_ATTR_NAME, "killer II");
     pth_attr_set(t_attr, PTH_ATTR_PRIO, 5);
     child[5] = pth_spawn(t_attr, my_child, (void *)"killer II");
-    pth_attr_set(t_attr, PTH_ATTR_NAME, "reader");
-    pth_attr_set(t_attr, PTH_ATTR_PRIO, PTH_PRIO_STD);
-    child[6] = pth_spawn(t_attr, my_reader, (void *)"reader");
+    if (!getenv("PTH_AUTOTEST")) {
+        pth_attr_set(t_attr, PTH_ATTR_NAME, "reader");
+        pth_attr_set(t_attr, PTH_ATTR_PRIO, PTH_PRIO_STD);
+        child[6] = pth_spawn(t_attr, my_reader, (void *)"reader");
+    }
     pth_attr_destroy(t_attr);
 
     t_attr2 = pth_attr_of(child[0]);

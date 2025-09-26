@@ -29,25 +29,5 @@
 
 COMPILER_HAPPYNESS(pth_compat)
 
-/*
- *  Replacement for strerror(3)
- */
-
-#if cpp
-#if !defined(HAVE_STRERROR)
-char *_pth_compat_strerror(int);
-#define strerror(errnum) _pth_compat_strerror(errnum)
-#endif
-#endif
-
-#if !defined(HAVE_STRERROR)
-extern char *const sys_errlist[];
-char *_pth_compat_strerror(int errnum)
-{
-    char *cp;
-
-    cp = sys_errlist[errnum];
-    return (cp);
-}
-#endif
+/* strerror() is available on modern systems */
 

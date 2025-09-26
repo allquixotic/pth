@@ -113,6 +113,54 @@ static void *ticker(void *_arg)
     return NULL;
 }
 
+/* client used for non-interactive mode */
+static void *self_client(void *parg)
+{
+    int port = *(int*)parg;
+    int fd = -1;
+    struct sockaddr_in sa;
+    char buf[4096];
+    int n;
+    fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (fd < 0) return NULL;
+    memset(&sa, 0, sizeof(sa));
+    sa.sin_family = AF_INET;
+    sa.sin_port = htons(port);
+    sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    if (connect(fd, (struct sockaddr*)&sa, sizeof(sa)) < 0) return NULL;
+    pth_write(fd, "GET / HTTP/1.0\r\n\r\n", 18);
+    n = pth_read(fd, buf, sizeof(buf)-1);
+    if (n > 0) {
+        buf[n] = '\0';
+        fprintf(stderr, "client: received %d bytes\n", n);
+    }
+    close(fd);
+    return NULL;
+}
+
+/* client driver used in AUTOTEST mode to generate load */
+typedef struct { int port; int secs; } client_args_t;
+static void *client_driver(void *parg)
+{
+    client_args_t *ca = (client_args_t*)parg;
+    time_t endt = time(NULL) + ca->secs;
+    while (time(NULL) < endt) {
+        int fd = socket(AF_INET, SOCK_STREAM, 0);
+        if (fd >= 0) {
+            struct sockaddr_in sa; memset(&sa,0,sizeof(sa));
+            sa.sin_family = AF_INET; sa.sin_port = htons(ca->port); sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+            if (connect(fd,(struct sockaddr*)&sa,sizeof(sa)) == 0) {
+                const char *req = "GET / HTTP/1.0\r\n\r\n";
+                pth_write(fd, req, strlen(req));
+                char buf[1024]; (void)pth_read(fd, buf, sizeof(buf));
+            }
+            close(fd);
+        }
+        pth_sleep(1);
+    }
+    return NULL;
+}
+
 /*
  * And the server main procedure
  */
@@ -151,63 +199,32 @@ int main(int argc, char *argv[])
     signal(SIGTERM, myexit);
 
     /* argument line parsing */
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <port>\n", argv[0]);
-        exit(1);
+    if (getenv("PTH_AUTOTEST")) {
+        int run_secs = 60;
+        const char *envs = getenv("PTH_HTTPD_SECS");
+        if (envs) { int v = atoi(envs); if (v > 0) run_secs = v; }
+        pth_event_t tev = pth_event(PTH_EVENT_TIME, pth_timeout(run_secs,0));
+        /* client driver thread repeatedly hits the server */
+        client_args_t ca = { .port = port, .secs = run_secs };
+        pth_attr_t caa = pth_attr_new(); pth_attr_set(caa, PTH_ATTR_JOINABLE, TRUE); pth_attr_set(caa, PTH_ATTR_NAME, "client-driver");
+        pth_spawn(caa, client_driver, &ca); pth_attr_destroy(caa);
+        /* accept loop with timeout */
+        fd_set rfds;
+        while (pth_event_status(tev) != PTH_STATUS_OCCURRED) {
+            FD_ZERO(&rfds); FD_SET(s, &rfds);
+            int r = pth_select_ev(s+1, &rfds, NULL, NULL, NULL, tev);
+            if (r > 0 && FD_ISSET(s, &rfds)) {
+                peer_len = sizeof(peer_addr);
+                if ((sr = pth_accept(s, (struct sockaddr *)&peer_addr, &peer_len)) != -1) {
+                    pth_attr_set(attr, PTH_ATTR_JOINABLE, TRUE);
+                    pth_spawn(attr, handler, (void *)((long)sr));
+                }
+            }
+        }
+        pth_event_free(tev, PTH_FREE_THIS);
+        close(s); pth_attr_destroy(attr); pth_kill(); return 0;
     }
-    port = atoi(argv[1]);
-    if (port <= 0 || port >= 65535) {
-        fprintf(stderr, "Illegal port: %d\n", port);
-        exit(1);
-    }
-
-    fprintf(stderr, "This is TEST_HTTPD, a Pth test using socket I/O.\n");
-    fprintf(stderr, "\n");
-    fprintf(stderr, "Multiple connections are accepted on the specified port.\n");
-    fprintf(stderr, "For each connection a separate thread is spawned which\n");
-    fprintf(stderr, "reads a HTTP request the socket and writes back a constant\n");
-    fprintf(stderr, "(and useless) HTTP response to the socket.\n");
-    fprintf(stderr, "Additionally a useless ticker thread awakens every 5s.\n");
-    fprintf(stderr, "Watch the average scheduler load the ticker displays.\n");
-    fprintf(stderr, "Hit CTRL-C for stopping this test.\n");
-    fprintf(stderr, "\n");
-
-    /* run a just for fun ticker thread */
-    attr = pth_attr_new();
-    pth_attr_set(attr, PTH_ATTR_NAME, "ticker");
-    pth_attr_set(attr, PTH_ATTR_JOINABLE, FALSE);
-    pth_attr_set(attr, PTH_ATTR_STACK_SIZE, 64*1024);
-    pth_spawn(attr, ticker, NULL);
-
-    /* create TCP socket */
-    if ((pe = getprotobyname("tcp")) == NULL) {
-        perror("getprotobyname");
-        exit(1);
-    }
-    if ((s = socket(AF_INET, SOCK_STREAM, pe->p_proto)) == -1) {
-        perror("socket");
-        exit(1);
-    }
-
-    /* bind socket to port */
-    sar.sin_family      = AF_INET;
-    sar.sin_addr.s_addr = INADDR_ANY;
-    sar.sin_port        = htons(port);
-    if (bind(s, (struct sockaddr *)&sar, sizeof(struct sockaddr_in)) == -1) {
-        perror("socket");
-        exit(1);
-    }
-
-    /* start listening on the socket with a queue of 10 */
-    if (listen(s, REQ_MAX) == -1) {
-        perror("listen");
-        exit(1);
-    }
-
-    /* finally loop for requests */
-    pth_attr_set(attr, PTH_ATTR_NAME, "handler");
-    fprintf(stderr, "listening on port %d (max %d simultaneous connections)\n", port, REQ_MAX);
-    for (;;) {
+for (;;) {
         /* accept next connection */
         peer_len = sizeof(peer_addr);
         if ((sr = pth_accept(s, (struct sockaddr *)&peer_addr, &peer_len)) == -1) {

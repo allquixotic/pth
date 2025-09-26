@@ -848,7 +848,7 @@ intern void pth_sched_eventmanager_sighandler(int sig)
 
     /* write signal to signal pipe in order to awake the select() */
     c = (int)sig;
-    pth_sc(write)(pth_sigpipe[1], &c, sizeof(char));
+    (void)pth_sc(write)(pth_sigpipe[1], &c, sizeof(char));
     return;
 }
 

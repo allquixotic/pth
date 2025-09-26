@@ -31,6 +31,8 @@
 #include <time.h>
 
 #include "pth.h"
+#include <stdint.h>
+#include <stdlib.h>
 
 volatile pth_uctx_t uctx[10];
 
@@ -42,7 +44,7 @@ volatile int worker_done[10];
 
 static void worker(void *ctx)
 {
-    volatile int n = (int)ctx;
+    volatile int n = (int)(intptr_t)ctx;
     volatile int i = 0;
 
     fprintf(stderr, "worker #%d: enter\n", n);
@@ -68,7 +70,7 @@ static void test_working(void)
     for (i = 1; i < 10; i++) {
         worker_done[i] = FALSE;
         pth_uctx_create((pth_uctx_t *)&uctx[i]);
-        pth_uctx_make(uctx[i], NULL, 32*1024, NULL, worker, (void *)i, uctx[0]);
+        pth_uctx_make(uctx[i], NULL, 32768, NULL, worker, (void *)(intptr_t)i, uctx[0]);
     }
 
     do {
@@ -97,6 +99,7 @@ static void test_working(void)
  */
 
 #define DO_SWITCHES 10000000
+static int do_switches_override(void){ return getenv("PTH_AUTOTEST") ? 100000 : DO_SWITCHES; }
 
 time_t       stat_start;
 time_t       stat_end;
@@ -120,12 +123,11 @@ static void test_performance(void)
     pth_uctx_make(uctx[1], NULL, 32*1024, NULL, dummy, NULL, uctx[0]);
 
     fprintf(stderr, "\n");
-    fprintf(stderr, "Performing %d user-space context switches... "
-            "be patient!\n", DO_SWITCHES);
+    fprintf(stderr, "Performing %d user-space context switches... be patient!\n", do_switches_override());
 
     stat_start = time(NULL);
     stat_switched = 0;
-    for (i = 0; i < DO_SWITCHES; i++) {
+    for (i = 0; i < do_switches_override(); i++) {
         stat_switched++;
         pth_uctx_switch(uctx[0], uctx[1]);
     }
@@ -134,10 +136,9 @@ static void test_performance(void)
     pth_uctx_destroy(uctx[0]);
     pth_uctx_destroy(uctx[1]);
 
-    fprintf(stderr, "We required %d seconds for performing the test, "
-            "so this means we can\n", (int)(stat_end-stat_start));
-    fprintf(stderr, "perform %d user-space context switches per second "
-            "on this platform.\n", DO_SWITCHES/(int)(stat_end-stat_start));
+    { int elapsed = (int)(stat_end - stat_start); if (elapsed <= 0) elapsed = 1;
+      fprintf(stderr, "We required %d seconds for performing the test, so this means we can\n", elapsed);
+      fprintf(stderr, "perform %d user-space context switches per second on this platform.\n", do_switches_override()/elapsed); }
     fprintf(stderr, "\n");
     return;
 }

@@ -35,6 +35,17 @@
 
 #include "pth.h"
 
+static void *writer(void *arg)
+{
+    int fd = *(int*)arg;
+    const char *msg = "ABC\n";
+    pth_sleep(1);
+    pth_write(fd, msg, 4);
+    close(fd);
+    return NULL;
+}
+
+
 /* a useless ticker thread */
 static void *ticker(void *_arg)
 {
@@ -65,6 +76,18 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Enter data. Hit CTRL-C to stop this test.\n");
     fprintf(stderr, "\n");
 
+    if (getenv("PTH_AUTOTEST")) {
+        int fds[2];
+        if (pipe(fds) == 0) {
+            pth_attr_t wa = pth_attr_new();
+            pth_attr_set(wa, PTH_ATTR_NAME, "writer");
+            pth_attr_set(wa, PTH_ATTR_JOINABLE, FALSE);
+            pth_spawn(wa, writer, &fds[1]);
+            pth_attr_destroy(wa);
+            dup2(fds[0], STDIN_FILENO);
+            close(fds[0]);
+        }
+    }
     t_attr = pth_attr_new();
     pth_attr_set(t_attr, PTH_ATTR_NAME, "ticker");
     t_ticker = pth_spawn(t_attr, ticker, NULL);
@@ -91,6 +114,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "main: select returned %d\n", n);
         while (pth_read(STDIN_FILENO, &c, 1) > 0)
             fprintf(stderr, "main: read stdin '%c'\n", c);
+        if (getenv("PTH_AUTOTEST")) break;
     }
 
     pth_cancel(t_ticker);

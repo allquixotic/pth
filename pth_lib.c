@@ -62,10 +62,10 @@ int pth_init(void)
 
     /* support for implicit initialization calls
        and to prevent multiple explict initialization, too */
-    if (pth_initialized)
+    if (pth_initialized) {
         return pth_error(FALSE, EPERM);
-    else
-        pth_initialized = TRUE;
+    }
+    pth_initialized = TRUE;
 
     pth_debug1("pth_init: enter");
 
@@ -90,7 +90,7 @@ int pth_init(void)
     pth_attr_set(t_attr, PTH_ATTR_NAME,         "**SCHEDULER**");
     pth_attr_set(t_attr, PTH_ATTR_JOINABLE,     FALSE);
     pth_attr_set(t_attr, PTH_ATTR_CANCEL_STATE, PTH_CANCEL_DISABLE);
-    pth_attr_set(t_attr, PTH_ATTR_STACK_SIZE,   64*1024);
+    pth_attr_set(t_attr, PTH_ATTR_STACK_SIZE,   65536);
     pth_attr_set(t_attr, PTH_ATTR_STACK_ADDR,   NULL);
     pth_sched = pth_spawn(t_attr, pth_scheduler, NULL);
     if (pth_sched == NULL) {
@@ -138,10 +138,12 @@ int pth_init(void)
 /* kill the package internals */
 int pth_kill(void)
 {
-    if (!pth_initialized)
+    if (!pth_initialized) {
         return pth_error(FALSE, EINVAL);
-    if (pth_current != pth_main)
+    }
+    if (pth_current != pth_main) {
         return pth_error(FALSE, EPERM);
+    }
     pth_debug1("pth_kill: enter");
     pth_thread_cleanup(pth_main);
     pth_scheduler_kill();

@@ -32,6 +32,17 @@
 
 #include "pth.h"
 
+static void *sigdriver(void *_)
+{
+    int i;
+    for (i = 0; i < 3; i++) {
+        pth_sleep(1);
+        kill(getpid(), SIGINT);
+    }
+    return NULL;
+}
+
+
 static pth_t child1;
 static pth_t child2;
 
@@ -139,6 +150,15 @@ int main(int argc, char *argv[])
     pth_attr_set(attr, PTH_ATTR_NAME, "inthandler");
     pth_spawn(attr, inthandler, (void *)"inthandler");
     pth_attr_destroy(attr);
+
+    /* in non-interactive mode, simulate CTRL-C x3 */
+    if (getenv("PTH_AUTOTEST")) {
+        pth_attr_t a = pth_attr_new();
+        pth_attr_set(a, PTH_ATTR_NAME, "sigdriver");
+        pth_attr_set(a, PTH_ATTR_JOINABLE, FALSE);
+        pth_spawn(a, sigdriver, NULL);
+        pth_attr_destroy(a);
+    }
 
     /* wait until childs are finished */
     while (pth_join(NULL, NULL));

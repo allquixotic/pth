@@ -89,7 +89,7 @@ int pth_attr_init(pth_attr_t a)
     a->a_dispatches = 0;
     a->a_joinable = TRUE;
     a->a_cancelstate = PTH_CANCEL_DEFAULT;
-    a->a_stacksize = 64*1024;
+    a->a_stacksize = 65536;
     a->a_stackaddr = NULL;
     return TRUE;
 }

@@ -72,7 +72,7 @@ intern void pth_debug(const char *file, int line, int argc, const char *fmt, ...
         va_end(ap);
         n = strlen(str);
         str[n++] = '\n';
-        pth_sc(write)(STDERR_FILENO, str, n);
+        (void)pth_sc(write)(STDERR_FILENO, str, n);
     }
     return;
 }

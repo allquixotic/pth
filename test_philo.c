@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
     /* wait until 60 seconds have elapsed or CTRL-C was pressed */
     sigemptyset(&ss);
     sigaddset(&ss, SIGINT);
-    ev = pth_event(PTH_EVENT_TIME, pth_timeout(60,0));
+    ev = pth_event(PTH_EVENT_TIME, pth_timeout(getenv("PTH_AUTOTEST")?3:60,0));
     pth_sigwait_ev(&ss, &sig, ev);
     pth_event_free(ev, PTH_FREE_ALL);
 
