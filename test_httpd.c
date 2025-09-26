@@ -197,27 +197,47 @@ int main(int argc, char *argv[])
     socklen_t peer_len;
     int sr;
     int port = 8080;
+    int bind_attempts = 0;
+    int max_bind_attempts = 100;
 
     /* initialize scheduler */
     pth_init();
     signal(SIGPIPE, SIG_IGN);
     signal(SIGINT,  myexit);
     signal(SIGTERM, myexit);
+    srand(time(NULL) ^ getpid());
 
     /* create server socket */
     if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         perror("socket");
         exit(1);
     }
+
+    /* try to bind to a port, retrying with random ports if needed */
     struct sockaddr_in sar;
     memset(&sar, 0, sizeof(sar));
     sar.sin_family = AF_INET;
-    sar.sin_addr.s_addr = INADDR_ANY;
-    sar.sin_port = htons(port);
-    if (bind(s, (struct sockaddr *)&sar, sizeof(sar)) == -1) {
-        perror("bind");
+    sar.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+    for (bind_attempts = 0; bind_attempts < max_bind_attempts; bind_attempts++) {
+        sar.sin_port = htons(port);
+        if (bind(s, (struct sockaddr *)&sar, sizeof(sar)) == 0) {
+            fprintf(stderr, "Successfully bound to port %d\n", port);
+            break;
+        }
+        if (errno != EADDRINUSE) {
+            perror("bind");
+            exit(1);
+        }
+        fprintf(stderr, "Port %d in use, trying another port...\n", port);
+        port = 1025 + (rand() % (60000 - 1025 + 1));
+    }
+
+    if (bind_attempts >= max_bind_attempts) {
+        fprintf(stderr, "Failed to find available port after %d attempts\n", max_bind_attempts);
         exit(1);
     }
+
     if (listen(s, 10) == -1) {
         perror("listen");
         exit(1);
