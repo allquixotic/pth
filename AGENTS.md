@@ -36,6 +36,8 @@ Modernize GNU Pth 2.0.7 to:
 - **MAJOR MILESTONE: All autotools files removed! Meson-only build system!**
 - **pth_mctx.c simplified from 561 to 83 lines (85% reduction) - removed all setjmp/longjmp compatibility code, keeping only modern ucontext API**
 - **Phase 2.2 complete: Removed non-Linux compatibility from pth_syscall.c (25 HAVE checks), pth_time.c (1 check), pth_string.c (2 checks)**
+- **CRITICAL FIX: Stack alignment bug in pth_mctx_set() - removed pre-decrement causing tests to crash**
+- **Implemented custom x86_64 assembly context switching (pth_mctx_swap.S) based on libaco to replace deprecated makecontext/swapcontext**
 
 ### Critical Blockers ✗
 
@@ -53,6 +55,13 @@ Modernize GNU Pth 2.0.7 to:
 **BLOCKER #3: Code Generation Constructs** ✓ RESOLVED!
 - Status: **RESOLVED** - All `#if cpp` blocks handled
 - Solution: Declarations extracted to pth_p.h, blocks remain in source for now (harmless)
+
+**BLOCKER #4: makecontext/swapcontext Deprecated** ✓ RESOLVED!
+- Status: **RESOLVED** - Replaced with custom x86_64 assembly
+- Solution: Implemented pth_mctx_swap.S based on libaco's proven assembly code
+- Critical bugfix: Removed stack pointer pre-decrement in pth_mctx_set() that violated x86_64 ABI
+- Stack must be at (16N-8) when entering functions, not 16N-aligned
+- Tests (test_std, test_pthread) now pass successfully
 
 ### Statistics
 - **Source files**: 26 pth_*.c files
