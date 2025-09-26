@@ -692,7 +692,7 @@ pth_vasprintf(
     return rv;
 }
 
-static char *
+__attribute__((unused)) static char *
 pth_asprintf(
     const char *fmt,
     ...)

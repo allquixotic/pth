@@ -40,7 +40,7 @@
 pth_time_t pth_time_zero = { 0L, 0L };
 
 /* sleep for a specified amount of microseconds */
-static void pth_time_usleep(unsigned long usec)
+__attribute__((unused)) static void pth_time_usleep(unsigned long usec)
 {
     struct timespec ts;
     ts.tv_sec  = usec / 1000000;
@@ -124,7 +124,7 @@ int pth_time_cmp(pth_time_t *t1, pth_time_t *t2)
 #endif
 
 /* calculate: t1 = t1 / n */
-static void pth_time_div(pth_time_t *t1, int n)
+__attribute__((unused)) static void pth_time_div(pth_time_t *t1, int n)
 {
     long q, r;
 
@@ -140,7 +140,7 @@ static void pth_time_div(pth_time_t *t1, int n)
 }
 
 /* calculate: t1 = t1 * n */
-static void pth_time_mul(pth_time_t *t1, int n)
+__attribute__((unused)) static void pth_time_mul(pth_time_t *t1, int n)
 {
     t1->tv_sec  *= n;
     t1->tv_usec *= n;
@@ -150,7 +150,7 @@ static void pth_time_mul(pth_time_t *t1, int n)
 }
 
 /* convert a time structure into a double value */
-static double pth_time_t2d(pth_time_t *t)
+double pth_time_t2d(pth_time_t *t)
 {
     double d;
 
@@ -159,7 +159,7 @@ static double pth_time_t2d(pth_time_t *t)
 }
 
 /* convert a time structure into a integer value */
-static int pth_time_t2i(pth_time_t *t)
+__attribute__((unused)) static int pth_time_t2i(pth_time_t *t)
 {
     int i;
 
@@ -168,7 +168,7 @@ static int pth_time_t2i(pth_time_t *t)
 }
 
 /* check whether time is positive */
-static int pth_time_pos(pth_time_t *t)
+__attribute__((unused)) static int pth_time_pos(pth_time_t *t)
 {
     if (t->tv_sec > 0 && t->tv_usec > 0)
         return 1;

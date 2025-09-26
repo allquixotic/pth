@@ -184,7 +184,7 @@ static pth_syscall_fct_tab_t pth_syscall_fct_tab[] = {
 #endif
 
 /* syscall wrapping initialization */
-static void pth_syscall_init(void)
+void pth_syscall_init(void)
 {
 #if PTH_SYSCALL_HARD
     int i;
@@ -255,7 +255,7 @@ static void pth_syscall_init(void)
 }
 
 /* syscall wrapping initialization */
-static void pth_syscall_kill(void)
+void pth_syscall_kill(void)
 {
 #if PTH_SYSCALL_HARD
     int i;

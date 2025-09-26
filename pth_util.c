@@ -76,7 +76,7 @@ int pth_util_sigdelete(int sig)
 }
 
 /* copy a string like strncpy() but always null-terminate */
-static char *pth_util_cpystrn(char *dst, const char *src, size_t dst_size)
+char *pth_util_cpystrn(char *dst, const char *src, size_t dst_size)
 {
     register char *d, *end;
 
@@ -93,7 +93,7 @@ static char *pth_util_cpystrn(char *dst, const char *src, size_t dst_size)
 }
 
 /* check whether a file-descriptor is valid */
-static int pth_util_fd_valid(int fd)
+int pth_util_fd_valid(int fd)
 {
     if (fd < 0 || fd >= FD_SETSIZE)
         return FALSE;
@@ -103,7 +103,7 @@ static int pth_util_fd_valid(int fd)
 }
 
 /* merge input fd set into output fds */
-static void pth_util_fds_merge(int nfd,
+void pth_util_fds_merge(int nfd,
                                fd_set *ifds1, fd_set *ofds1,
                                fd_set *ifds2, fd_set *ofds2,
                                fd_set *ifds3, fd_set *ofds3)
@@ -125,7 +125,7 @@ static void pth_util_fds_merge(int nfd,
 }
 
 /* test whether fds in the input fd sets occurred in the output fds */
-static int pth_util_fds_test(int nfd,
+int pth_util_fds_test(int nfd,
                              fd_set *ifds1, fd_set *ofds1,
                              fd_set *ifds2, fd_set *ofds2,
                              fd_set *ifds3, fd_set *ofds3)
@@ -151,7 +151,7 @@ static int pth_util_fds_test(int nfd,
  * number of remaining input fds. This number uses BSD select(2) semantics: a
  * fd in two set counts twice!
  */
-static int pth_util_fds_select(int nfd,
+int pth_util_fds_select(int nfd,
                                fd_set *ifds1, fd_set *ofds1,
                                fd_set *ifds2, fd_set *ofds2,
                                fd_set *ifds3, fd_set *ofds3)

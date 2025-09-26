@@ -88,7 +88,7 @@ struct pth_st {
 
 #endif /* cpp */
 
-static const char *pth_state_names[] = {
+__attribute__((unused)) static const char *pth_state_names[] = {
     "scheduler", "new", "ready", "running", "waiting", "dead"
 };
 
