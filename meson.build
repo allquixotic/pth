@@ -243,7 +243,8 @@ foreach test_name, test_sources : tests
   )
 
   # Add all tests to the suite with PTH_AUTOTEST environment variable
-  test(test_name, test_exe, timeout: 30, env: ['PTH_AUTOTEST=1'])
+  # PTH_HTTPD_SECS sets runtime for test_httpd (default 60s is too long)
+  test(test_name, test_exe, timeout: 30, env: ['PTH_AUTOTEST=1', 'PTH_HTTPD_SECS=5'])
 endforeach
 
 # Generate pkg-config file
