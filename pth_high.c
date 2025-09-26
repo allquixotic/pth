@@ -770,7 +770,8 @@ ssize_t pth_read_ev(int fd, void *buf, size_t nbytes, pth_event_t ev_extra)
        in mind, that only 1 next read(2) call is guarrantied to not block
        (except for the EINTR situation). */
     while ((n = pth_sc(read)(fd, buf, nbytes)) < 0
-           && errno == EINTR) ;
+           && errno == EINTR)
+        ;
 
     pth_debug2("pth_read_ev: leave to thread \"%s\"", pth_current->name);
     return n;
@@ -944,7 +945,8 @@ ssize_t pth_readv_ev(int fd, const struct iovec *iov, int iovcnt, pth_event_t ev
            && errno == EINTR) ;
 #else
     while ((n = pth_sc(readv)(fd, iov, iovcnt)) < 0
-           && errno == EINTR) ;
+           && errno == EINTR)
+        ;
 #endif
 
     pth_debug2("pth_readv_ev: leave to thread \"%s\"", pth_current->name);
@@ -1374,7 +1376,8 @@ ssize_t pth_recvfrom_ev(int fd, void *buf, size_t nbytes, int flags, struct sock
        in mind, that only 1 next recvfrom(2) call is guarrantied to not block
        (except for the EINTR situation). */
     while ((n = pth_sc(recvfrom)(fd, buf, nbytes, flags, from, fromlen)) < 0
-           && errno == EINTR) ;
+           && errno == EINTR)
+        ;
 
     pth_debug2("pth_recvfrom_ev: leave to thread \"%s\"", pth_current->name);
     return n;
