@@ -242,10 +242,8 @@ foreach test_name, test_sources : tests
     install: false,
   )
 
-  # Only add automatic tests for the basic ones
-  if test_name in ['test_std', 'test_misc']
-    test(test_name, test_exe, timeout: 30)
-  endif
+  # Add all tests to the suite
+  test(test_name, test_exe, timeout: 30)
 endforeach
 
 # Generate pkg-config file
