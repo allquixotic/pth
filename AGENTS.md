@@ -33,6 +33,7 @@ Modernize GNU Pth 2.0.7 to:
 - Fixed 60+ static/extern linkage conflicts
 - Added pth_mctx_restore/pth_mctx_restored macros to pth_p.h
 - Unused function warnings fixed with __attribute__((unused))
+- **MAJOR MILESTONE: All autotools files removed! Meson-only build system!**
 
 ### Critical Blockers ✗
 
@@ -41,10 +42,11 @@ Modernize GNU Pth 2.0.7 to:
 - Solution: Manually extracted all declarations from `#if cpp` blocks and created proper pth_p.h
 - All 26 source files now compile successfully with meson/ninja
 
-**BLOCKER #2: Autotools Still Present**
-- 18 autotools files still in tree (configure, Makefile.in, aclocal.m4, etc.)
-- Can be removed now that meson build works
-- Next priority task
+**BLOCKER #2: Autotools Still Present** ✓ RESOLVED!
+- Status: **RESOLVED** - All autotools files removed successfully
+- Removed: configure, configure.ac, Makefile, Makefile.in, Makefile.am, aclocal.m4, config.guess, config.sub, config.h.in, compile, depcomp, install-sh, shtool, libtool, ltmain.sh, libtool.m4, pth_p.h.in
+- Kept: pth.m4 (useful for pkg-config integration)
+- Build verified working with meson/ninja only
 
 **BLOCKER #3: Code Generation Constructs** ✓ RESOLVED!
 - Status: **RESOLVED** - All `#if cpp` blocks handled
@@ -238,8 +240,8 @@ When approaching context limits (~80% of conversation):
 ## Progress Tracking
 
 ### Current Work
-- **Active Task**: Phase 1.1 COMPLETE! All source files compile successfully
-- **Current Phase**: Phase 1.2 - Complete meson.build and remove autotools
+- **Active Task**: Phase 1 nearly complete! Moving to Phase 2
+- **Current Phase**: Phase 1 - Build system modernization (almost done), Phase 2 - C17 modernization next
 - **Progress**:
   - ✓ Extracted all 27 #if cpp blocks to temp file
   - ✓ Created new pth_p.h with proper ordering (constants, types, structs, externs, macros)
@@ -263,8 +265,8 @@ When approaching context limits (~80% of conversation):
 - [x] Initial meson.build created
 - [x] pth_p.h code generation eliminated ✓✓✓
 - [x] All files compile ✓✓✓
+- [x] Autotools removed ✓✓✓
 - [ ] meson.build complete and functional (tests not all configured yet)
-- [ ] Autotools removed
 
 ### Phase 2 Progress
 - [x] `intern` → `static` (95/95 done)
