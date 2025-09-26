@@ -49,17 +49,9 @@
 
 #include "pth_p.h"
 
-#if HAVE_LONGLONG
 #define LLONG long long
-#else
-#define LLONG long
-#endif
 
-#if HAVE_LONGDOUBLE
 #define LDOUBLE long double
-#else
-#define LDOUBLE double
-#endif
 
 static void fmtstr     (char *, size_t *, size_t, char *, int, int, int);
 static void fmtint     (char *, size_t *, size_t, LLONG, int, int, int, int);

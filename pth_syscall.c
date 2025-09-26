@@ -68,12 +68,7 @@ int pth_syscall_hard = PTH_SYSCALL_HARD;
 #if cpp
 #if PTH_SYSCALL_HARD
 /* hard syscall mapping */
-#if HAVE_SYS_SYSCALL_H
 #include <sys/syscall.h>
-#endif
-#ifdef HAVE_SYS_SOCKETCALL_H
-#include <sys/socketcall.h>
-#endif
 #define pth_sc(func) pth_sc_##func
 #else /* !PTH_SYSCALL_HARD */
 /* no hard syscall mapping */
@@ -208,20 +203,11 @@ void pth_syscall_init(void)
     }
     pth_syscall_lib_tab[i].path = NULL;
 
-#if defined(HAVE_DLOPEN) && defined(HAVE_DLSYM)
-    /* determine addresses of syscall functions */
     for (i = 0; pth_syscall_fct_tab[i].name != NULL; i++) {
-
-        /* attempt #1: fetch from implicit successor libraries */
-#if defined(HAVE_DLSYM) && defined(HAVE_RTLD_NEXT)
         pth_syscall_fct_tab[i].addr = (pth_syscall_fct_t)
             dlsym(RTLD_NEXT, pth_syscall_fct_tab[i].name);
-#endif
 
-        /* attempt #2: fetch from explicitly loaded C library */
         if (pth_syscall_fct_tab[i].addr == NULL) {
-
-            /* first iteration: try resolve from already loaded libraries */
             for (j = 0; pth_syscall_lib_tab[j].path != NULL; j++) {
                 if (pth_syscall_lib_tab[j].handle != NULL) {
                     pth_syscall_fct_tab[i].addr = (pth_syscall_fct_t)
@@ -232,7 +218,6 @@ void pth_syscall_init(void)
                 }
             }
 
-            /* second iteration: try to load more libraries for resolving */
             if (pth_syscall_fct_tab[i].addr == NULL) {
                 for (j = 0; pth_syscall_lib_tab[j].path != NULL; j++) {
                     if (pth_syscall_lib_tab[j].handle == NULL) {
@@ -250,7 +235,6 @@ void pth_syscall_init(void)
         }
     }
 #endif
-#endif
     return;
 }
 
@@ -260,8 +244,6 @@ void pth_syscall_kill(void)
 #if PTH_SYSCALL_HARD
     int i;
 
-#if defined(HAVE_DLOPEN) && defined(HAVE_DLSYM)
-    /* unload all explicitly loaded libraries */
     for (i = 0; pth_syscall_lib_tab[i].path != NULL; i++) {
         if (pth_syscall_lib_tab[i].handle != NULL) {
             dlclose(pth_syscall_lib_tab[i].handle);
@@ -269,7 +251,6 @@ void pth_syscall_kill(void)
         }
         pth_syscall_lib_tab[i].path = NULL;
     }
-#endif
     free(pth_syscall_libs);
     pth_syscall_libs = NULL;
 #endif
@@ -302,11 +283,7 @@ static pid_t pth_sc_fork(void)
         return ((pid_t (*)(void))
                pth_syscall_fct_tab[PTH_SCF_fork].addr)
                ();
-#if defined(HAVE_SYSCALL) && defined(SYS_fork)
     else return (pid_t)syscall(SYS_fork);
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "fork");
-#endif
 }
 
 /* ==== Pth hard syscall wrapper for nanosleep(3) ==== */
@@ -368,13 +345,7 @@ static int pth_sc_sigprocmask(int how, const sigset_t *set, sigset_t *oset)
         return ((int (*)(int, const sigset_t *, sigset_t *))
                pth_syscall_fct_tab[PTH_SCF_sigprocmask].addr)
                (how, set, oset);
-#if defined(HAVE_SYSCALL) && defined(SYS___sigprocmask14) /* NetBSD */
-    else return (int)syscall(SYS___sigprocmask14, how, set, oset);
-#elif defined(HAVE_SYSCALL) && defined(SYS_sigprocmask)
     else return (int)syscall(SYS_sigprocmask, how, set, oset);
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "sigprocmask");
-#endif
 }
 
 /* ==== Pth hard syscall wrapper for sigwait(3) ==== */
@@ -403,11 +374,7 @@ static pid_t pth_sc_waitpid(pid_t wpid, int *status, int options)
         return ((pid_t (*)(pid_t, int *, int))
                pth_syscall_fct_tab[PTH_SCF_waitpid].addr)
                (wpid, status, options);
-#if defined(HAVE_SYSCALL) && defined(SYS_waitpid)
     else return (pid_t)syscall(SYS_waitpid, wpid, status, options);
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "waitpid");
-#endif
 }
 
 /* ==== Pth hard syscall wrapper for connect(2) ==== */
@@ -425,19 +392,7 @@ static int pth_sc_connect(int s, const struct sockaddr *addr, socklen_t addrlen)
         return ((int (*)(int, const struct sockaddr *, socklen_t))
                pth_syscall_fct_tab[PTH_SCF_connect].addr)
                (s, addr, addrlen);
-#if defined(HAVE_SYSCALL) && defined(SYS_connect)
     else return (int)syscall(SYS_connect, s, addr, addrlen);
-#elif defined(HAVE_SYSCALL) && defined(SYS_socketcall) && defined(SOCKOP_connect) /* Linux */
-    else {
-        unsigned long args[3];
-        args[0] = (unsigned long)s;
-        args[1] = (unsigned long)addr;
-        args[2] = (unsigned long)addrlen;
-        return (int)syscall(SYS_socketcall, SOCKOP_connect, args);
-    }
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "connect");
-#endif
 }
 
 /* ==== Pth hard syscall wrapper for accept(2) ==== */
@@ -455,19 +410,7 @@ static int pth_sc_accept(int s, struct sockaddr *addr, socklen_t *addrlen)
         return ((int (*)(int, struct sockaddr *, socklen_t *))
                pth_syscall_fct_tab[PTH_SCF_accept].addr)
                (s, addr, addrlen);
-#if defined(HAVE_SYSCALL) && defined(SYS_accept)
     else return (int)syscall(SYS_accept, s, addr, addrlen);
-#elif defined(HAVE_SYSCALL) && defined(SYS_socketcall) && defined(SOCKOP_accept) /* Linux */
-    else {
-        unsigned long args[3];
-        args[0] = (unsigned long)s;
-        args[1] = (unsigned long)addr;
-        args[2] = (unsigned long)addrlen;
-        return (int)syscall(SYS_socketcall, SOCKOP_accept, args);
-    }
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "accept");
-#endif
 }
 
 /* ==== Pth hard syscall wrapper for select(2) ==== */
@@ -487,13 +430,7 @@ static int pth_sc_select(int nfds, fd_set *readfds, fd_set *writefds,
         return ((int (*)(int, fd_set *, fd_set *, fd_set *, struct timeval *))
                pth_syscall_fct_tab[PTH_SCF_select].addr)
                (nfds, readfds, writefds, exceptfds, timeout);
-#if defined(HAVE_SYSCALL) && defined(SYS__newselect) /* Linux */
-    else return (int)syscall(SYS__newselect, nfds, readfds, writefds, exceptfds, timeout);
-#elif defined(HAVE_SYSCALL) && defined(SYS_select)
     else return (int)syscall(SYS_select, nfds, readfds, writefds, exceptfds, timeout);
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "accept");
-#endif
 }
 
 /* ==== Pth hard syscall wrapper for pselect(2) ==== */
@@ -534,11 +471,7 @@ static ssize_t pth_sc_read(int fd, void *buf, size_t nbytes)
         return ((ssize_t (*)(int, void *, size_t))
                pth_syscall_fct_tab[PTH_SCF_read].addr)
                (fd, buf, nbytes);
-#if defined(HAVE_SYSCALL) && defined(SYS_read)
     else return (ssize_t)syscall(SYS_read, fd, buf, nbytes);
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "read");
-#endif
 }
 
 /* ==== Pth hard syscall wrapper for write(2) ==== */
@@ -556,11 +489,7 @@ static ssize_t pth_sc_write(int fd, const void *buf, size_t nbytes)
         return ((ssize_t (*)(int, const void *, size_t))
                pth_syscall_fct_tab[PTH_SCF_write].addr)
                (fd, buf, nbytes);
-#if defined(HAVE_SYSCALL) && defined(SYS_write)
     else return (ssize_t)syscall(SYS_write, fd, buf, nbytes);
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "write");
-#endif
 }
 
 /* ==== Pth hard syscall wrapper for readv(2) ==== */
@@ -578,11 +507,7 @@ static ssize_t pth_sc_readv(int fd, const struct iovec *iov, int iovcnt)
         return ((ssize_t (*)(int, const struct iovec *, int))
                pth_syscall_fct_tab[PTH_SCF_readv].addr)
                (fd, iov, iovcnt);
-#if defined(HAVE_SYSCALL) && defined(SYS_readv)
     else return (ssize_t)syscall(SYS_readv, fd, iov, iovcnt);
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "readv");
-#endif
 }
 
 /* ==== Pth hard syscall wrapper for writev(2) ==== */
@@ -600,11 +525,7 @@ static ssize_t pth_sc_writev(int fd, const struct iovec *iov, int iovcnt)
         return ((ssize_t (*)(int, const struct iovec *, int))
                pth_syscall_fct_tab[PTH_SCF_writev].addr)
                (fd, iov, iovcnt);
-#if defined(HAVE_SYSCALL) && defined(SYS_writev)
     else return (ssize_t)syscall(SYS_writev, fd, iov, iovcnt);
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "writev");
-#endif
 }
 
 /* ==== Pth hard syscall wrapper for pread(2) ==== */
@@ -644,13 +565,7 @@ static ssize_t pth_sc_recv(int fd, void *buf, size_t nbytes, int flags)
         return ((ssize_t (*)(int, void *, size_t, int))
                pth_syscall_fct_tab[PTH_SCF_recv].addr)
                (fd, buf, nbytes, flags);
-#if defined(HAVE_SYSCALL) && defined(SYS_recv)
-    else return (ssize_t)syscall(SYS_recv, fd, buf, nbytes, flags);
-#elif defined(HAVE_SYSCALL) && defined(SYS_recvfrom)
     else return (ssize_t)syscall(SYS_recvfrom, fd, buf, nbytes, flags, (struct sockaddr *)NULL, (socklen_t *)NULL);
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "recv");
-#endif
 }
 
 /* ==== Pth hard syscall wrapper for send(2) ==== */
@@ -668,13 +583,7 @@ static ssize_t pth_sc_send(int fd, void *buf, size_t nbytes, int flags)
         return ((ssize_t (*)(int, void *, size_t, int))
                pth_syscall_fct_tab[PTH_SCF_send].addr)
                (fd, buf, nbytes, flags);
-#if defined(HAVE_SYSCALL) && defined(SYS_send)
-    else return (ssize_t)syscall(SYS_send, fd, buf, nbytes, flags);
-#elif defined(HAVE_SYSCALL) && defined(SYS_sendto)
     else return (ssize_t)syscall(SYS_sendto, fd, buf, nbytes, flags, (struct sockaddr *)NULL, 0);
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "send");
-#endif
 }
 
 /* ==== Pth hard syscall wrapper for recvfrom(2) ==== */
@@ -692,11 +601,7 @@ static ssize_t pth_sc_recvfrom(int fd, void *buf, size_t nbytes, int flags, stru
         return ((ssize_t (*)(int, void *, size_t, int, struct sockaddr *, socklen_t *))
                pth_syscall_fct_tab[PTH_SCF_recvfrom].addr)
                (fd, buf, nbytes, flags, from, fromlen);
-#if defined(HAVE_SYSCALL) && defined(SYS_recvfrom)
     else return (ssize_t)syscall(SYS_recvfrom, fd, buf, nbytes, flags, from, fromlen);
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "recvfrom");
-#endif
 }
 
 /* ==== Pth hard syscall wrapper for sendto(2) ==== */
@@ -714,11 +619,7 @@ static ssize_t pth_sc_sendto(int fd, const void *buf, size_t nbytes, int flags, 
         return ((ssize_t (*)(int, const void *, size_t, int, const struct sockaddr *, socklen_t))
                pth_syscall_fct_tab[PTH_SCF_sendto].addr)
                (fd, buf, nbytes, flags, to, tolen);
-#if defined(HAVE_SYSCALL) && defined(SYS_sendto)
     else return (ssize_t)syscall(SYS_sendto, fd, buf, nbytes, flags, to, tolen);
-#else
-    else PTH_SYSCALL_ERROR(-1, ENOSYS, "sendto");
-#endif
 }
 
 #endif /* PTH_SYSCALL_HARD */

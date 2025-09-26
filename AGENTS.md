@@ -35,6 +35,7 @@ Modernize GNU Pth 2.0.7 to:
 - Unused function warnings fixed with __attribute__((unused))
 - **MAJOR MILESTONE: All autotools files removed! Meson-only build system!**
 - **pth_mctx.c simplified from 561 to 83 lines (85% reduction) - removed all setjmp/longjmp compatibility code, keeping only modern ucontext API**
+- **Phase 2.2 complete: Removed non-Linux compatibility from pth_syscall.c (25 HAVE checks), pth_time.c (1 check), pth_string.c (2 checks)**
 
 ### Critical Blockers ✗
 
@@ -242,7 +243,7 @@ When approaching context limits (~80% of conversation):
 
 ### Current Work
 - **Active Task**: Phase 2 - C17 modernization in progress
-- **Current Phase**: Phase 2.2 - Removing non-Linux compatibility code
+- **Current Phase**: Phase 2.3 - Ready to fix compiler warnings
 - **Progress**:
   - ✓ Extracted all 27 #if cpp blocks to temp file
   - ✓ Created new pth_p.h with proper ordering (constants, types, structs, externs, macros)
@@ -272,7 +273,7 @@ When approaching context limits (~80% of conversation):
 ### Phase 2 Progress
 - [x] `intern` → `static` (95/95 done)
 - [x] pth_mctx.c simplified to modern Linux ucontext only (removed all sjlj variants)
-- [ ] Non-Linux code removed from other files (pth_time.c, pth_string.c, pth_syscall.c remain)
+- [x] Non-Linux code removed from pth_syscall.c, pth_time.c, pth_string.c
 - [ ] All warnings fixed (0/~17000)
 - [ ] Clean build with `-Werror`
 
