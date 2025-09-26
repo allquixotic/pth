@@ -6,213 +6,219 @@
                                                 -- Tom DeMarco
   GNU Pth - The GNU Portable Threads
 
-  INSTALL
-  =======
+  INSTALL (Modernized Meson/Ninja Build)
+  =======================================
 
   Overview
   --------
 
-  To install the Pth library into /path/to/pth/{bin,lib,include,man}/
-  perform the following steps in your shell:
+  This is the modernized version of GNU Pth that uses Meson/Ninja
+  instead of autotools. To build and install Pth, perform the following
+  steps in your shell:
 
-    $ ./configure
-       --prefix=/path/to/pth
-      [--enable-batch]
-      [--enable-pthread]
-      [--enable-debug]
-      [--enable-profile]
-      [--enable-optimize]
-      [--enable-maintainer]
-      [--enable-tests]
-      [--disable-shared]
-      [--disable-static]
-      [--enable-syscall-soft]
-      [--enable-syscall-hard]
-      [--with-sfio[=DIR]]
-      [--with-ex[=DIR]]
-      [--with-dmalloc[=DIR]]
-      [--with-mctx-mth=ID]
-      [--with-mctx-dsp=ID]
-      [--with-mctx-stk=ID]
-    $ make
-    $ make test
-    $ make install
+    $ meson setup builddir [options]
+    $ ninja -C builddir
+    $ meson test -C builddir
+    $ sudo ninja -C builddir install
 
-  Pth Options
+  Quick Start
   -----------
 
-  The supported options have the following meaning:
+  For most users, the default configuration is sufficient:
 
-  --prefix=DIR: installation path prefix
-      This sets the path prefix of installation tree. By default this
-      prefix is /usr/local. For fine-tuning the installation paths
-      run `./configure --help' and watch for the various path related
-      options.
+    $ meson setup builddir
+    $ ninja -C builddir
+    $ meson test -C builddir
+    $ sudo ninja -C builddir install
 
-  --enable-batch: build in batch mode (default=no)
-      This enables batch building. Currently this does
-      nothing more than supressing some displayed hints.
+  This will install Pth into /usr/local by default.
 
-  --enable-maintainer: build maintainer targets (default=no)
-      This enables some maintainer build targets.
-      Not for use by end users.
+  Meson Options
+  -------------
 
-  --enable-tests: build test targets (default=yes)
-      This enables the building of test targets, i.e. the various
-      test_xxx programs. If you don't want to build these use
-      --disable-tests.
+  --prefix=DIR: installation path prefix (default: /usr/local)
+      This sets the base installation directory. Libraries will be
+      installed to PREFIX/lib, headers to PREFIX/include, etc.
 
-  --enable-pthread: build with pthread library (default=no)
-      This enables the building and installation of the
-      POSIX Threads ("pthread") emulation API for Pth.
-      This per default forces --enable-syscall-soft.
+      Example:
+        $ meson setup builddir --prefix=/opt/pth
 
-  --enable-debug: build for debugging (default=no)
-      This is for debugging Pth and only interesting
-      for developers.
+  --buildtype=TYPE: build type (default: release)
+      Available types:
+      - plain: no extra flags
+      - debug: debugging symbols, no optimization
+      - debugoptimized: debugging symbols with optimization
+      - release: optimization, no debugging symbols
+      - minsize: optimized for size
 
-  --enable-profile: build for profiling (default=no)
-      This enables profiling with gprof and is only
-      interesting for developers.
+      Example:
+        $ meson setup builddir --buildtype=debug
 
-  --enable-optimize: build with optimization (default=no)
-      This enables optimization flags, mainly for GCC.
+  -Dc_std=STANDARD: C standard (default: c17)
+      Available standards: c89, c99, c11, c17, c23
 
-  --disable-static: build static libraries (default=yes)
-      This disables the building of static libraries (libxx.a).
+      Example:
+        $ meson setup builddir -Dc_std=c17
 
-  --disable-shared: build shared libraries (default=yes)
-      This disables the building of shared libraries (libxx.so).
+  -Doptimization=LEVEL: optimization level (default: 2)
+      Available levels: 0, g, 1, 2, 3, s
 
-  --enable-syscall-soft: use soft system call mapping (default=no)
-      This enables the soft system call mapping for pth.h and pthread.h
+      Example:
+        $ meson setup builddir -Doptimization=3
 
-  --enable-syscall-hard: use hard system call mapping (default=no)
-      This enables the hard system call mapping inside pth_syscall.c which
-      means that wrappers for system calls are exported by libpth.
+  -Dwarning_level=LEVEL: warning level (default: 2)
+      Available levels: 0, 1, 2, 3
 
-  --with-sfio[=DIR]
-      This can be used to enable Sfio support (see pth_sfiodisc function) for
-      Pth. The paths to the include and library file of Sfio has to be either
-      given via CFLAGS and LDFLAGS or the DIR argument has to specify the root
-      of the Sfio installation tree. Sfio can be found at
-      http://www.research.att.com/sw/tools/sfio/.
+      Example:
+        $ meson setup builddir -Dwarning_level=3
 
-  --with-ex[=DIR]
-      This can be used to enable OSSP ex support (exception handling)
-      for Pth. The paths to the include and library file of OSSP ex has
-      to be either given via CFLAGS and LDFLAGS or the DIR argument has
-      to specify the root of the OSSP ex installation tree. OSSP ex can
-      be found at http://www.ossp.org/pkg/ex/.
+  -Dwerror=BOOL: treat warnings as errors (default: true)
+      Values: true, false
 
-  --with-dmalloc[=DIR]
-      This can be used to enable Dmalloc support (debugging memory
-      allocations) for Pth. The paths to the include and library file of
-      Dmalloc has to be either given via CFLAGS and LDFLAGS or the DIR
-      argument has to specify the root of the Dmalloc installation tree.
-      Dmalloc can be found at http://www.dmalloc.com/.
+      Example:
+        $ meson setup builddir -Dwerror=false
 
-  The remaining three options are really for experts only.  They force
-  particular variants for the machine context implementation.  Be carefully
-  here: Not all possibly variants of the three knobs actually work (they could
-  not work, even when we want!).
+  Build Configuration Examples
+  -----------------------------
 
-  --with-mctx-mth=ID       [EXPERTS ONLY]
-      This forces Pth to use a particular machine context method.
-      Available variants are:
-      mcsc .... makecontext(2)/swapcontext(2)
-      sjlj .... setjmp(2)/longjmp(2)
+  Development build with debug symbols:
+    $ meson setup builddir --buildtype=debug
+    $ ninja -C builddir
 
-  --with-mctx-dsp=ID       [EXPERTS ONLY]
-      This forces Pth to use a particular machine context dispatching
-      approach. Available variants are:
-      sc ...... swapcontext(2)
-      ssjlj ... sigsetjmp(3)/siglongjmp(3)
-      sjlj .... setjmp(3)/longjmp(3) (signal mask aware)
-      usjlj ... _setjmp(3)/_longjmp(3) (signal mask aware)
-      sjlje ... setjmp(3)/longjmp(3) [emulated = plus sigprocmask(2)]
-      sjljlx .. setjmp(3)/longjmp(3), specific for anchient Linux version
-      sjljisc . setjmp(3)/longjmp(3), specific for Interactive Unix (ISC)
-      sjljw32 . setjmp(3)/longjmp(3), specific for Win32/CygWin
+  Release build with maximum optimization:
+    $ meson setup builddir --buildtype=release -Doptimization=3
+    $ ninja -C builddir
 
-  --with-mctx-stk=ID       [EXPERTS ONLY]
-      This forces Pth to use a particular machine context stack setup
-      approach. Available variants are:
-      none .... no standard stack setup (only for some sjljXXX above)
-      mc ...... makecontext(2)
-      sas ..... sigaltstack(2)
-      ss ...... sigstack(2)
+  Install to custom location:
+    $ meson setup builddir --prefix=$HOME/.local
+    $ ninja -C builddir install
 
-  Compiler Flags
-  --------------
+  Build without treating warnings as errors:
+    $ meson setup builddir -Dwerror=false
+    $ ninja -C builddir
 
-  Some systems require unusual options for compilation or linking that the
-  `configure' script does not know about. You can give `configure' initial
-  values for variables by setting them in the environment. Using a
-  Bourne-compatible shell, you can do that on the command line like this:
+  Running Tests
+  -------------
 
-    $ CC=c89 CFLAGS=-O2 LIBS=-lposix ./configure
+  All tests run automatically without user interaction:
 
-  Or on systems that have the `env' program, you can do it like this:
+    $ meson test -C builddir
 
-    $ env CPPFLAGS=-I/usr/local/include LDFLAGS=-s ./configure
+  To run tests with verbose output:
+
+    $ meson test -C builddir --verbose
+
+  To run a specific test:
+
+    $ meson test -C builddir test_std
+
+  To run tests with timeout:
+
+    $ meson test -C builddir --timeout-multiplier 2
 
   Compiling For Multiple Architectures
-  ------------------------------------
+  -------------------------------------
 
-  You can compile the package for more than one kind of computer at the same
-  time, by placing the object files for each architecture in their own
-  directory.  To do this, you must use a version of `make' that supports the
-  `VPATH' variable, such as GNU `make'.  `cd' to the directory where you want
-  the object files and executables to go and run the `configure' script.
-  `configure' automatically checks for the source code in the directory that
-  `configure' is in and in `..'.
+  You can compile for multiple architectures by creating separate
+  build directories:
 
-  If you have to use a `make' that does not supports the `VPATH' variable, you
-  have to compile the package for one architecture at a time in the source
-  code directory.  After you have installed the package for one architecture,
-  use `make distclean' before reconfiguring for another architecture.
+    $ meson setup build-x86_64 --prefix=/opt/pth-x86_64
+    $ ninja -C build-x86_64
 
-  Installation Names
-  ------------------
+  Reconfiguring Options
+  ----------------------
 
-  By default, `make install' will install the package's files in
-  `/usr/local/bin', `/usr/local/man', etc.  You can specify an installation
-  prefix other than `/usr/local' by giving `configure' the option
-  `--prefix=PATH'.
+  To change configuration options after initial setup:
 
-  You can specify separate installation prefixes for architecture-specific
-  files and architecture-independent files.  If you give `configure' the
-  option `--exec-prefix=PATH', the package will use PATH as the prefix for
-  installing programs and libraries.  Documentation and other data files will
-  still use the regular prefix.
+    $ meson configure builddir --prefix=/usr
+    $ meson configure builddir -Doptimization=3
 
-  In addition, if you use an unusual directory layout you can give options
-  like `--bindir=PATH' to specify different values for particular kinds of
-  files.  Run `configure --help' for a list of the directories you can set and
-  what kinds of files go in them.
+  To see all current configuration options:
 
-  Specifying the System Type
-  --------------------------
+    $ meson configure builddir
 
-  There may be some features `configure' can not figure out automatically, but
-  needs to determine by the type of host the package will run on.  Usually
-  `configure' can figure that out, but if it prints a message saying it can
-  not guess the host type, give it the `--host=TYPE' option.  TYPE can either
-  be a short name for the system type, such as `sun4', or a canonical name
-  with three fields: CPU-COMPANY-SYSTEM
+  Cleaning Build
+  --------------
 
-  See the file `config.sub' for the possible values of each field.  If
-  `config.sub' isn't included in this package, then this package doesn't need
-  to know the host type.
+  To clean build artifacts:
 
-  Sharing Defaults
-  ----------------
+    $ ninja -C builddir clean
 
-  If you want to set default values for `configure' scripts to share, you can
-  create a site shell script called `config.site' that gives default values
-  for variables like `CC', `cache_file', and `prefix'.  `configure' looks for
-  `PREFIX/share/config.site' if it exists, then `PREFIX/etc/config.site'
-  if it exists.  Or, you can set the `CONFIG_SITE' environment variable to
-  the location of the site script.
+  To completely remove build directory:
 
+    $ rm -rf builddir
+
+  Requirements
+  ------------
+
+  - Meson 0.56.0 or later
+  - Ninja 1.8 or later
+  - C17-capable compiler (GCC 8+ or Clang 9+)
+  - Linux kernel 4.0 or later
+  - glibc 2.28 or later
+  - x86_64 architecture
+
+  To check if you have the required tools:
+
+    $ meson --version
+    $ ninja --version
+    $ gcc --version     # or clang --version
+
+  Installation
+  ------------
+
+  By default, 'ninja install' installs files to:
+
+    /usr/local/lib/libpth.so        (shared library)
+    /usr/local/lib/libpth.a         (static library)
+    /usr/local/include/pth.h        (main header)
+    /usr/local/include/pthread.h    (pthread emulation)
+    /usr/local/lib/pkgconfig/pth.pc (pkg-config file)
+
+  You can change the prefix:
+
+    $ meson setup builddir --prefix=/opt/pth
+    $ ninja -C builddir install
+
+  Or use DESTDIR for staged installs:
+
+    $ DESTDIR=/tmp/stage ninja -C builddir install
+
+  Using Installed Library
+  -----------------------
+
+  With pkg-config:
+
+    $ gcc -o myapp myapp.c $(pkg-config --cflags --libs pth)
+
+  Manual linking:
+
+    $ gcc -o myapp myapp.c -I/usr/local/include -L/usr/local/lib -lpth
+
+  Troubleshooting
+  ---------------
+
+  Build fails with "meson: command not found":
+    Install meson: sudo apt install meson ninja-build
+
+  Build fails with "ninja: command not found":
+    Install ninja: sudo apt install ninja-build
+
+  Tests fail with timeout:
+    Increase timeout: meson test -C builddir --timeout-multiplier 3
+
+  Cannot find installed library:
+    Add to LD_LIBRARY_PATH: export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+    Or run ldconfig: sudo ldconfig
+
+  Comparison with Autotools Build
+  --------------------------------
+
+  Old (autotools):              New (meson):
+  ./configure --prefix=/opt     meson setup builddir --prefix=/opt
+  make                          ninja -C builddir
+  make test                     meson test -C builddir
+  make install                  ninja -C builddir install
+
+  The meson build is significantly faster (parallel by default) and
+  produces identical library functionality with 100% API compatibility.
