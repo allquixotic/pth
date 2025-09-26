@@ -39,7 +39,7 @@ typedef struct pth_pqueue_st pth_pqueue_t;
 #endif /* cpp */
 
 /* initialize a priority queue; O(1) */
-static void pth_pqueue_init(pth_pqueue_t *q)
+void pth_pqueue_init(pth_pqueue_t *q)
 {
     if (q != NULL) {
         q->q_head = NULL;
@@ -49,7 +49,7 @@ static void pth_pqueue_init(pth_pqueue_t *q)
 }
 
 /* insert thread into priority queue; O(n) */
-static void pth_pqueue_insert(pth_pqueue_t *q, int prio, pth_t t)
+void pth_pqueue_insert(pth_pqueue_t *q, int prio, pth_t t)
 {
     pth_t c;
     int p;
@@ -94,7 +94,7 @@ static void pth_pqueue_insert(pth_pqueue_t *q, int prio, pth_t t)
 }
 
 /* remove thread with maximum priority from priority queue; O(1) */
-static pth_t pth_pqueue_delmax(pth_pqueue_t *q)
+pth_t pth_pqueue_delmax(pth_pqueue_t *q)
 {
     pth_t t;
 
