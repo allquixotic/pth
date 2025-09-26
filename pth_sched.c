@@ -142,11 +142,16 @@ void pth_scheduler_kill(void)
     if (pth_time_cmp((now), &pth_loadticknext) >= 0) { \
         pth_time_t ttmp; \
         int numready; \
+        int loop_count = 0; \
         numready = pth_pqueue_elements(&pth_RQ); \
         pth_time_set(&ttmp, (now)); \
         do { \
             pth_loadval = (numready*0.25) + (pth_loadval*0.75); \
             pth_time_sub(&ttmp, &pth_loadtickgap); \
+            loop_count++; \
+            if (loop_count > 200) { \
+                break; \
+            } \
         } while (pth_time_cmp(&ttmp, &pth_loadticknext) >= 0); \
         pth_time_set(&pth_loadticknext, (now)); \
         pth_time_add(&pth_loadticknext, &pth_loadtickgap); \
