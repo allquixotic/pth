@@ -64,11 +64,12 @@ Modernize GNU Pth 2.0.7 to:
 - Tests (test_std, test_pthread) now pass successfully
 
 ### Statistics
-- **Source files**: 26 pth_*.c files
-- **Test files**: 11 test_*.c files (only 2 auto-run in meson)
-- **Warnings**: ~17,000+ from clang-tidy analysis
-- **`intern` keyword**: 71 uses (should be `static`)
-- **Template files**: 9 .in files
+- **Source files**: 26 pth_*.c files (all compile cleanly)
+- **Test files**: 11 test_*.c files (10 tests + 1 library; all 10 tests pass)
+- **Warnings**: 0 (ZERO!) with -Werror -Wall -Wextra
+- **`intern` keyword**: 0 (all replaced with `static`)
+- **Template files**: 2 .in files remaining (pth_acdef.h.in, pth_acmac.h.in)
+- **#if cpp blocks**: 27 remaining across 13 files (declarations extracted, blocks are harmless)
 
 ## Modernization Plan
 
@@ -251,46 +252,36 @@ When approaching context limits (~80% of conversation):
 ## Progress Tracking
 
 ### Current Work
-- **Active Task**: Phase 2 - C17 modernization in progress
-- **Current Phase**: Phase 2.3 - Ready to fix compiler warnings
-- **Progress**:
-  - ✓ Extracted all 27 #if cpp blocks to temp file
-  - ✓ Created new pth_p.h with proper ordering (constants, types, structs, externs, macros)
-  - ✓ Added pth_mctx_t definition
-  - ✓ Replaced all `intern` keywords with `static` (95 instances)
-  - ✓ Fixed 60+ static/extern linkage conflicts by removing static from cross-file functions
-  - ✓ Added missing declarations: pth_snprintf, pth_vsnprintf, pth_tcb_alloc, pth_tcb_free, pth_mctx_set, pth_time_cmp, pth_time_t2d, pth_mutex_releaseall, pth_util_sigdelete, pth_time_zero, pth_time_set macro, pth_sc macro
-  - ✓ Fixed pth_writev_iov_advance signature (7 params, not 5)
-  - ✓ Added pth_mctx_switch macro to pth_p.h
-  - ✓ Fixed pth_scheduler signature: void* (void*) not void (void)
-  - ✓ Removed static from pth_pqueue, pth_ring, pth_sched, pth_syscall, and pth_util functions
-  - ✓ Fixed empty-body warnings in pth_lib.c
-  - ✓ Added forward declaration for pth_sched_eventmanager_sighandler
-  - ✓ Fixed unused function warnings with __attribute__((unused))
-  - ✓ Added pth_mctx_restore/pth_mctx_restored macro definitions to pth_p.h
-  - ✓ ALL 26 SOURCE FILES COMPILE SUCCESSFULLY!
-  - ✓ Both libpth.so and libpth.a build successfully
-  - ✓ All 11 test programs compile and link successfully
+- **Active Task**: Phase 1-3 largely complete! Moving to Phase 4/5
+- **Current Phase**: Phases 2 & 3 substantially complete - ready for cleanup and documentation
+- **Outstanding Items**:
+  - Remove #if cpp blocks from 13 source files (harmless but violates success criteria)
+  - Measure test coverage (need to determine if >70%)
+  - Continue removing non-Linux compatibility code (ongoing)
+  - Update documentation for meson/modern Linux
+  - Verify API behavioral compatibility formally
 
-### Phase 1 Progress
+### Phase 1 Progress ✓ COMPLETE
 - [x] Initial meson.build created
 - [x] pth_p.h code generation eliminated ✓✓✓
 - [x] All files compile ✓✓✓
 - [x] Autotools removed ✓✓✓
-- [ ] meson.build complete and functional (tests not all configured yet)
+- [x] meson.build complete and functional ✓✓✓
 
-### Phase 2 Progress
+### Phase 2 Progress ✓ MOSTLY COMPLETE
 - [x] `intern` → `static` (95/95 done)
 - [x] pth_mctx.c simplified to modern Linux ucontext only (removed all sjlj variants)
 - [x] Non-Linux code removed from pth_syscall.c, pth_time.c, pth_string.c
-- [ ] All warnings fixed (0/~17000)
-- [ ] Clean build with `-Werror`
+- [x] All warnings fixed ✓✓✓ (ZERO warnings!)
+- [x] Clean build with `-Werror` ✓✓✓ (builds with -Werror -Wall -Wextra -std=c17)
 
-### Phase 3 Progress
+### Phase 3 Progress ✓ COMPLETE
 - [x] test_httpd made non-interactive
-- [ ] All tests non-interactive (1/11)
-- [ ] Test coverage expanded
-- [ ] All tests enabled in meson (2/11)
+- [x] test_sig made non-interactive
+- [x] test_misc, test_mp, test_sfio, test_select, test_uctx, test_philo, test_std, test_pthread all working
+- [x] All 10 tests non-interactive ✓✓✓ (PTH_AUTOTEST=1)
+- [ ] Test coverage expanded (not measured yet)
+- [x] All tests enabled in meson ✓✓✓ (10/10 tests pass)
 
 ### Phase 4 Progress
 - [ ] API behavior documented
@@ -305,17 +296,17 @@ When approaching context limits (~80% of conversation):
 ## Success Criteria
 
 The modernization is complete when ALL of these are true:
-- ✓ Builds with meson/ninja only (no autotools)
-- ✓ Compiles with `-std=c17 -Werror -Wall -Wextra` with zero warnings
-- ✓ No code generation constructs (no `#if cpp` blocks)
-- ✓ All tests pass without user interaction
-- ✓ Test coverage >70%
-- ✓ No non-Linux compatibility code (for ancient systems)
-- ✓ All 26 source files compile and link correctly
-- ✓ All 11 tests run automatically
-- ✓ 100% API behavioral compatibility verified with tests
-- ✓ Documentation updated for modern Linux/meson
-- ✓ Clean git history with meaningful commits
+- ✅ Builds with meson/ninja only (no autotools) **DONE**
+- ✅ Compiles with `-std=c17 -Werror -Wall -Wextra` with zero warnings **DONE**
+- ⚠️  No code generation constructs (no `#if cpp` blocks) **PARTIAL** (27 blocks remain in 13 files)
+- ✅ All tests pass without user interaction **DONE** (10/10 tests pass with PTH_AUTOTEST=1)
+- ❓ Test coverage >70% **NOT MEASURED**
+- ⚠️  No non-Linux compatibility code (for ancient systems) **PARTIAL** (some cleanup done, more remains)
+- ✅ All 26 source files compile and link correctly **DONE**
+- ✅ All 10 tests run automatically **DONE** (test_common is a library, not a test)
+- ❓ 100% API behavioral compatibility verified with tests **NOT VERIFIED**
+- ❌ Documentation updated for modern Linux/meson **NOT DONE**
+- ✅ Clean git history with meaningful commits **DONE**
 
 ## File Organization
 
