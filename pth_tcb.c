@@ -88,7 +88,7 @@ struct pth_st {
 
 #endif /* cpp */
 
-intern const char *pth_state_names[] = {
+static const char *pth_state_names[] = {
     "scheduler", "new", "ready", "running", "waiting", "dead"
 };
 
@@ -100,7 +100,7 @@ intern const char *pth_state_names[] = {
 #endif
 
 /* allocate a thread control block */
-intern pth_t pth_tcb_alloc(unsigned int stacksize, void *stackaddr)
+pth_t pth_tcb_alloc(unsigned int stacksize, void *stackaddr)
 {
     pth_t t;
 
@@ -134,7 +134,7 @@ intern pth_t pth_tcb_alloc(unsigned int stacksize, void *stackaddr)
 }
 
 /* free a thread control block */
-intern void pth_tcb_free(pth_t t)
+void pth_tcb_free(pth_t t)
 {
     if (t == NULL)
         return;

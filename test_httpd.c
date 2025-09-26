@@ -94,8 +94,10 @@ static void *handler(void *_arg)
  * A useless ticker we let run just for fun in parallel
  */
 
+#if 0  /* Currently unused */
 static void *ticker(void *_arg)
 {
+    (void)_arg;
     time_t now;
     char *ct;
     float avload;
@@ -112,8 +114,10 @@ static void *ticker(void *_arg)
     /* NOTREACHED */
     return NULL;
 }
+#endif
 
 /* client used for non-interactive mode */
+#if 0  /* Currently unused */
 static void *self_client(void *parg)
 {
     int port = *(int*)parg;
@@ -137,6 +141,7 @@ static void *self_client(void *parg)
     close(fd);
     return NULL;
 }
+#endif
 
 /* client driver used in AUTOTEST mode to generate load */
 typedef struct { int port; int secs; } client_args_t;
@@ -176,6 +181,7 @@ pth_attr_t attr;
 
 static void myexit(int sig)
 {
+    (void)sig;
     close(s);
     pth_attr_destroy(attr);
     pth_kill();
@@ -185,18 +191,41 @@ static void myexit(int sig)
 
 int main(int argc, char *argv[])
 {
-    struct sockaddr_in sar;
-    struct protoent *pe;
+    (void)argc;
+    (void)argv;
     struct sockaddr_in peer_addr;
     socklen_t peer_len;
     int sr;
-    int port;
+    int port = 8080;
 
     /* initialize scheduler */
     pth_init();
     signal(SIGPIPE, SIG_IGN);
     signal(SIGINT,  myexit);
     signal(SIGTERM, myexit);
+
+    /* create server socket */
+    if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+        perror("socket");
+        exit(1);
+    }
+    struct sockaddr_in sar;
+    memset(&sar, 0, sizeof(sar));
+    sar.sin_family = AF_INET;
+    sar.sin_addr.s_addr = INADDR_ANY;
+    sar.sin_port = htons(port);
+    if (bind(s, (struct sockaddr *)&sar, sizeof(sar)) == -1) {
+        perror("bind");
+        exit(1);
+    }
+    if (listen(s, 10) == -1) {
+        perror("listen");
+        exit(1);
+    }
+
+    /* create thread attributes */
+    attr = pth_attr_new();
+    pth_attr_set(attr, PTH_ATTR_JOINABLE, FALSE);
 
     /* argument line parsing */
     if (getenv("PTH_AUTOTEST")) {
@@ -224,7 +253,9 @@ int main(int argc, char *argv[])
         pth_event_free(tev, PTH_FREE_THIS);
         close(s); pth_attr_destroy(attr); pth_kill(); return 0;
     }
-for (;;) {
+
+    /* main accept loop */
+    for (;;) {
         /* accept next connection */
         peer_len = sizeof(peer_addr);
         if ((sr = pth_accept(s, (struct sockaddr *)&peer_addr, &peer_len)) == -1) {

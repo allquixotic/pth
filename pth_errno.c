@@ -51,6 +51,6 @@
 
 #endif /* cpp */
 
-intern int pth_errno_storage = 0;
-intern int pth_errno_flag    = 0;
+int pth_errno_storage = 0;
+int pth_errno_flag    = 0;
 

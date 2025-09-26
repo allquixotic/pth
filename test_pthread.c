@@ -60,6 +60,8 @@ static void *child(void *_arg)
 
 int main(int argc, char *argv[])
 {
+    (void)argc;
+    (void)argv;
     pthread_attr_t thread_attr;
     pthread_t thread[4];
     char *rc;

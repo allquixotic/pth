@@ -39,7 +39,7 @@ typedef struct pth_pqueue_st pth_pqueue_t;
 #endif /* cpp */
 
 /* initialize a priority queue; O(1) */
-intern void pth_pqueue_init(pth_pqueue_t *q)
+static void pth_pqueue_init(pth_pqueue_t *q)
 {
     if (q != NULL) {
         q->q_head = NULL;
@@ -49,7 +49,7 @@ intern void pth_pqueue_init(pth_pqueue_t *q)
 }
 
 /* insert thread into priority queue; O(n) */
-intern void pth_pqueue_insert(pth_pqueue_t *q, int prio, pth_t t)
+static void pth_pqueue_insert(pth_pqueue_t *q, int prio, pth_t t)
 {
     pth_t c;
     int p;
@@ -94,7 +94,7 @@ intern void pth_pqueue_insert(pth_pqueue_t *q, int prio, pth_t t)
 }
 
 /* remove thread with maximum priority from priority queue; O(1) */
-intern pth_t pth_pqueue_delmax(pth_pqueue_t *q)
+static pth_t pth_pqueue_delmax(pth_pqueue_t *q)
 {
     pth_t t;
 
@@ -125,7 +125,7 @@ intern pth_t pth_pqueue_delmax(pth_pqueue_t *q)
 }
 
 /* remove thread from priority queue; O(n) */
-intern void pth_pqueue_delete(pth_pqueue_t *q, pth_t t)
+static void pth_pqueue_delete(pth_pqueue_t *q, pth_t t)
 {
     if (q == NULL)
         return;
@@ -168,7 +168,7 @@ intern void pth_pqueue_delete(pth_pqueue_t *q, pth_t t)
 #endif
 
 /* move a thread inside queue to the top; O(n) */
-intern int pth_pqueue_favorite(pth_pqueue_t *q, pth_t t)
+static int pth_pqueue_favorite(pth_pqueue_t *q, pth_t t)
 {
     if (q == NULL)
         return FALSE;
@@ -184,7 +184,7 @@ intern int pth_pqueue_favorite(pth_pqueue_t *q, pth_t t)
 }
 
 /* increase priority of all(!) threads in queue; O(1) */
-intern void pth_pqueue_increase(pth_pqueue_t *q)
+static void pth_pqueue_increase(pth_pqueue_t *q)
 {
     if (q == NULL)
         return;
@@ -208,7 +208,7 @@ intern void pth_pqueue_increase(pth_pqueue_t *q)
 #endif
 
 /* walk to last thread in queue */
-intern pth_t pth_pqueue_tail(pth_pqueue_t *q)
+static pth_t pth_pqueue_tail(pth_pqueue_t *q)
 {
     if (q == NULL)
         return NULL;
@@ -218,7 +218,7 @@ intern pth_t pth_pqueue_tail(pth_pqueue_t *q)
 }
 
 /* walk to next or previous thread in queue; O(1) */
-intern pth_t pth_pqueue_walk(pth_pqueue_t *q, pth_t t, int direction)
+static pth_t pth_pqueue_walk(pth_pqueue_t *q, pth_t t, int direction)
 {
     pth_t tn;
 
@@ -238,7 +238,7 @@ intern pth_t pth_pqueue_walk(pth_pqueue_t *q, pth_t t, int direction)
 }
 
 /* check whether a thread is in a queue; O(n) */
-intern int pth_pqueue_contains(pth_pqueue_t *q, pth_t t)
+static int pth_pqueue_contains(pth_pqueue_t *q, pth_t t)
 {
     pth_t tc;
     int found;

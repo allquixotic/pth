@@ -36,10 +36,11 @@
 /* delete a pending signal */
 static void pth_util_sigdelete_sighandler(int _sig)
 {
+    (void)_sig;
     /* nop */
     return;
 }
-intern int pth_util_sigdelete(int sig)
+int pth_util_sigdelete(int sig)
 {
     sigset_t ss, oss;
     struct sigaction sa, osa;
@@ -75,7 +76,7 @@ intern int pth_util_sigdelete(int sig)
 }
 
 /* copy a string like strncpy() but always null-terminate */
-intern char *pth_util_cpystrn(char *dst, const char *src, size_t dst_size)
+static char *pth_util_cpystrn(char *dst, const char *src, size_t dst_size)
 {
     register char *d, *end;
 
@@ -92,7 +93,7 @@ intern char *pth_util_cpystrn(char *dst, const char *src, size_t dst_size)
 }
 
 /* check whether a file-descriptor is valid */
-intern int pth_util_fd_valid(int fd)
+static int pth_util_fd_valid(int fd)
 {
     if (fd < 0 || fd >= FD_SETSIZE)
         return FALSE;
@@ -102,7 +103,7 @@ intern int pth_util_fd_valid(int fd)
 }
 
 /* merge input fd set into output fds */
-intern void pth_util_fds_merge(int nfd,
+static void pth_util_fds_merge(int nfd,
                                fd_set *ifds1, fd_set *ofds1,
                                fd_set *ifds2, fd_set *ofds2,
                                fd_set *ifds3, fd_set *ofds3)
@@ -124,7 +125,7 @@ intern void pth_util_fds_merge(int nfd,
 }
 
 /* test whether fds in the input fd sets occurred in the output fds */
-intern int pth_util_fds_test(int nfd,
+static int pth_util_fds_test(int nfd,
                              fd_set *ifds1, fd_set *ofds1,
                              fd_set *ifds2, fd_set *ofds2,
                              fd_set *ifds3, fd_set *ofds3)
@@ -150,7 +151,7 @@ intern int pth_util_fds_test(int nfd,
  * number of remaining input fds. This number uses BSD select(2) semantics: a
  * fd in two set counts twice!
  */
-intern int pth_util_fds_select(int nfd,
+static int pth_util_fds_select(int nfd,
                                fd_set *ifds1, fd_set *ofds1,
                                fd_set *ifds2, fd_set *ofds2,
                                fd_set *ifds3, fd_set *ofds3)

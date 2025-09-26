@@ -92,7 +92,7 @@ void *pth_key_getdata(pth_key_t key)
     return (void *)pth_current->data_value[key];
 }
 
-intern void pth_key_destroydata(pth_t t)
+void pth_key_destroydata(pth_t t)
 {
     void *data;
     int key;

@@ -37,19 +37,15 @@
 #endif /* cpp */
 
 /* a global variable holding a zero time */
-intern pth_time_t pth_time_zero = { 0L, 0L };
+pth_time_t pth_time_zero = { 0L, 0L };
 
 /* sleep for a specified amount of microseconds */
-intern void pth_time_usleep(unsigned long usec)
+static void pth_time_usleep(unsigned long usec)
 {
-#ifdef HAVE_USLEEP
-    usleep((unsigned int )usec);
-#else
-    struct timeval timeout;
-    timeout.tv_sec  = usec / 1000000;
-    timeout.tv_usec = usec - (1000000 * timeout.tv_sec);
-    while (pth_sc(select)(1, NULL, NULL, NULL, &timeout) < 0 && errno == EINTR) ;
-#endif
+    struct timespec ts;
+    ts.tv_sec  = usec / 1000000;
+    ts.tv_nsec = (usec % 1000000) * 1000;
+    while (nanosleep(&ts, &ts) < 0 && errno == EINTR) ;
     return;
 }
 
@@ -95,7 +91,7 @@ pth_time_t pth_timeout(long sec, long usec)
 }
 
 /* calculate: t1 <=> t2 */
-intern int pth_time_cmp(pth_time_t *t1, pth_time_t *t2)
+int pth_time_cmp(pth_time_t *t1, pth_time_t *t2)
 {
     int rc;
 
@@ -128,7 +124,7 @@ intern int pth_time_cmp(pth_time_t *t1, pth_time_t *t2)
 #endif
 
 /* calculate: t1 = t1 / n */
-intern void pth_time_div(pth_time_t *t1, int n)
+static void pth_time_div(pth_time_t *t1, int n)
 {
     long q, r;
 
@@ -144,7 +140,7 @@ intern void pth_time_div(pth_time_t *t1, int n)
 }
 
 /* calculate: t1 = t1 * n */
-intern void pth_time_mul(pth_time_t *t1, int n)
+static void pth_time_mul(pth_time_t *t1, int n)
 {
     t1->tv_sec  *= n;
     t1->tv_usec *= n;
@@ -154,7 +150,7 @@ intern void pth_time_mul(pth_time_t *t1, int n)
 }
 
 /* convert a time structure into a double value */
-intern double pth_time_t2d(pth_time_t *t)
+static double pth_time_t2d(pth_time_t *t)
 {
     double d;
 
@@ -163,7 +159,7 @@ intern double pth_time_t2d(pth_time_t *t)
 }
 
 /* convert a time structure into a integer value */
-intern int pth_time_t2i(pth_time_t *t)
+static int pth_time_t2i(pth_time_t *t)
 {
     int i;
 
@@ -172,7 +168,7 @@ intern int pth_time_t2i(pth_time_t *t)
 }
 
 /* check whether time is positive */
-intern int pth_time_pos(pth_time_t *t)
+static int pth_time_pos(pth_time_t *t)
 {
     if (t->tv_sec > 0 && t->tv_usec > 0)
         return 1;

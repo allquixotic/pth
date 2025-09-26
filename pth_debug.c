@@ -52,7 +52,7 @@
 
 #endif /* cpp */
 
-intern void pth_debug(const char *file, int line, int argc, const char *fmt, ...)
+void pth_debug(const char *file, int line, int argc, const char *fmt, ...)
 {
     va_list ap;
     static char str[1024];
@@ -72,13 +72,14 @@ intern void pth_debug(const char *file, int line, int argc, const char *fmt, ...
         va_end(ap);
         n = strlen(str);
         str[n++] = '\n';
-        (void)pth_sc(write)(STDERR_FILENO, str, n);
+        ssize_t written = pth_sc(write)(STDERR_FILENO, str, n);
+        (void)written; /* Intentionally ignore write errors in debug output */
     }
     return;
 }
 
 /* dump out a page to stderr summarizing the internal state of Pth */
-intern void pth_dumpstate(FILE *fp)
+void pth_dumpstate(FILE *fp)
 {
     fprintf(fp, "+----------------------------------------------------------------------\n");
     fprintf(fp, "| Pth Version: %s\n", PTH_VERSION_STR);
@@ -95,7 +96,7 @@ intern void pth_dumpstate(FILE *fp)
     return;
 }
 
-intern void pth_dumpqueue(FILE *fp, const char *qn, pth_pqueue_t *q)
+void pth_dumpqueue(FILE *fp, const char *qn, pth_pqueue_t *q)
 {
     pth_t t;
     int n;

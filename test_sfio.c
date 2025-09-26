@@ -125,6 +125,8 @@ int main(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
+    (void)argc;
+    (void)argv;
     fprintf(stderr, "You have to build Pth with --with-sfio to run this test!\n");
     return 0;
 }

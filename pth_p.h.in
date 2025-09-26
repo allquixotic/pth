@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 #include <setjmp.h>
 #include <signal.h>
@@ -91,32 +92,9 @@
 #endif
 
 /* non-blocking flags */
-#ifdef  O_NONBLOCK
 #define O_NONBLOCKING O_NONBLOCK
-#else
-#ifdef  O_NDELAY
-#define O_NONBLOCKING O_NDELAY
-#else
-#ifdef  FNDELAY
-#define O_NONBLOCKING FNDELAY
-#else
-#error "No O_NONBLOCK, O_NDELAY or FNDELAY flag available!"
-#endif
-#endif
-#endif
 
-/* fallback definition for fdset_t size */
-#if !defined(FD_SETSIZE)
-#define FD_SETSIZE 1024
-#endif
-
-/* fallback definition for struct timespec */
-#ifndef HAVE_STRUCT_TIMESPEC
-struct timespec {
-    time_t  tv_sec;     /* seconds */
-    long    tv_nsec;    /* and nanoseconds */
-};
-#endif
+/* FD_SETSIZE and struct timespec are available on modern Linux systems */
 
 /* compiler happyness: avoid ``empty compilation unit'' problem */
 #define COMPILER_HAPPYNESS(name) \

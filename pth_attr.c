@@ -116,7 +116,7 @@ int pth_attr_set(pth_attr_t a, int op, ...)
     return rc;
 }
 
-intern int pth_attr_ctrl(int cmd, pth_attr_t a, int op, va_list ap)
+int pth_attr_ctrl(int cmd, pth_attr_t a, int op, va_list ap)
 {
     if (a == NULL)
         return pth_error(FALSE, EINVAL);

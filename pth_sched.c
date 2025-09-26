@@ -27,16 +27,16 @@
                                      -- Unknown   */
 #include "pth_p.h"
 
-intern pth_t        pth_main;       /* the main thread                       */
-intern pth_t        pth_sched;      /* the permanent scheduler thread        */
-intern pth_t        pth_current;    /* the currently running thread          */
-intern pth_pqueue_t pth_NQ;         /* queue of new threads                  */
-intern pth_pqueue_t pth_RQ;         /* queue of threads ready to run         */
-intern pth_pqueue_t pth_WQ;         /* queue of threads waiting for an event */
-intern pth_pqueue_t pth_SQ;         /* queue of suspended threads            */
-intern pth_pqueue_t pth_DQ;         /* queue of terminated threads           */
-intern int          pth_favournew;  /* favour new threads on startup         */
-intern float        pth_loadval;    /* average scheduler load value          */
+static pth_t        pth_main;       /* the main thread                       */
+static pth_t        pth_sched;      /* the permanent scheduler thread        */
+static pth_t        pth_current;    /* the currently running thread          */
+static pth_pqueue_t pth_NQ;         /* queue of new threads                  */
+static pth_pqueue_t pth_RQ;         /* queue of threads ready to run         */
+static pth_pqueue_t pth_WQ;         /* queue of threads waiting for an event */
+static pth_pqueue_t pth_SQ;         /* queue of suspended threads            */
+static pth_pqueue_t pth_DQ;         /* queue of terminated threads           */
+static int          pth_favournew;  /* favour new threads on startup         */
+static float        pth_loadval;    /* average scheduler load value          */
 
 static int          pth_sigpipe[2]; /* internal signal occurrence pipe       */
 static sigset_t     pth_sigpending; /* mask of pending signals               */
@@ -48,7 +48,7 @@ static pth_time_t   pth_loadticknext;
 static pth_time_t   pth_loadtickgap = PTH_TIME(1,0);
 
 /* initialize the scheduler ingredients */
-intern int pth_scheduler_init(void)
+static int pth_scheduler_init(void)
 {
     /* create the internal signal pipe */
     if (pipe(pth_sigpipe) == -1)
@@ -80,7 +80,7 @@ intern int pth_scheduler_init(void)
 }
 
 /* drop all threads (except for the currently active one) */
-intern void pth_scheduler_drop(void)
+static void pth_scheduler_drop(void)
 {
     pth_t t;
 
@@ -112,7 +112,7 @@ intern void pth_scheduler_drop(void)
 }
 
 /* kill the scheduler ingredients */
-intern void pth_scheduler_kill(void)
+static void pth_scheduler_kill(void)
 {
     /* drop all threads */
     pth_scheduler_drop();
@@ -153,8 +153,9 @@ intern void pth_scheduler_kill(void)
     }
 
 /* the heart of this library: the thread scheduler */
-intern void *pth_scheduler(void *dummy)
+static void *pth_scheduler(void *dummy)
 {
+    (void)dummy;
     sigset_t sigs;
     pth_time_t running;
     pth_time_t snapshot;
@@ -380,7 +381,7 @@ intern void *pth_scheduler(void *dummy)
  * Look whether some events already occurred (or failed) and move
  * corresponding threads from waiting queue back to ready queue.
  */
-intern void pth_sched_eventmanager(pth_time_t *now, int dopoll)
+static void pth_sched_eventmanager(pth_time_t *now, int dopoll)
 {
     pth_t nexttimer_thread;
     pth_event_t nexttimer_ev;
@@ -545,7 +546,7 @@ intern void pth_sched_eventmanager(pth_time_t *now, int dopoll)
                     if (   (   ev->ev_args.TID.tid == NULL
                             && pth_pqueue_elements(&pth_DQ) > 0)
                         || (   ev->ev_args.TID.tid != NULL
-                            && ev->ev_args.TID.tid->state == ev->ev_goal))
+                            && (int)ev->ev_args.TID.tid->state == ev->ev_goal))
                         this_occurred = TRUE;
                 }
                 /* Custom Event Function */
@@ -839,7 +840,7 @@ intern void pth_sched_eventmanager(pth_time_t *now, int dopoll)
     return;
 }
 
-intern void pth_sched_eventmanager_sighandler(int sig)
+static void pth_sched_eventmanager_sighandler(int sig)
 {
     char c;
 
@@ -848,7 +849,8 @@ intern void pth_sched_eventmanager_sighandler(int sig)
 
     /* write signal to signal pipe in order to awake the select() */
     c = (int)sig;
-    (void)pth_sc(write)(pth_sigpipe[1], &c, sizeof(char));
+    ssize_t written = pth_sc(write)(pth_sigpipe[1], &c, sizeof(char));
+    (void)written;
     return;
 }
 

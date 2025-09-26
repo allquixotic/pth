@@ -125,7 +125,7 @@ int pth_mutex_release(pth_mutex_t *mutex)
     return TRUE;
 }
 
-intern void pth_mutex_releaseall(pth_t thread)
+void pth_mutex_releaseall(pth_t thread)
 {
     pth_ringnode_t *rn, *rnf;
 

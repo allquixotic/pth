@@ -302,7 +302,7 @@ int pth_select_ev(int nfd, fd_set *rfds, fd_set *wfds,
     pth_debug2("pth_select_ev: called from thread \"%s\"", pth_current->name);
 
     /* POSIX.1-2001/SUSv3 compliance */
-    if (nfd < 0 || nfd > FD_SETSIZE)
+    if (nfd > FD_SETSIZE)
         return pth_error(-1, EINVAL);
     if (timeout != NULL) {
         if (   timeout->tv_sec  < 0
@@ -477,7 +477,7 @@ int pth_poll_ev(struct pollfd *pfd, nfds_t nfd, int timeout, pth_event_t ev_extr
     /* argument sanity checks */
     if (pfd == NULL)
         return pth_error(-1, EFAULT);
-    if (nfd < 0 || nfd > FD_SETSIZE)
+    if (nfd > FD_SETSIZE)
         return pth_error(-1, EINVAL);
 
     /* convert timeout number into a timeval structure */
@@ -952,7 +952,7 @@ ssize_t pth_readv_ev(int fd, const struct iovec *iov, int iovcnt, pth_event_t ev
 }
 
 /* A faked version of readv(2) */
-intern ssize_t pth_readv_faked(int fd, const struct iovec *iov, int iovcnt)
+ssize_t pth_readv_faked(int fd, const struct iovec *iov, int iovcnt)
 {
     char *buffer;
     size_t bytes, copy, rv;
@@ -1035,7 +1035,7 @@ ssize_t pth_writev_ev(int fd, const struct iovec *iov, int iovcnt, pth_event_t e
     /* poll filedescriptor if not already in non-blocking operation */
     if (fdmode != PTH_FDMODE_NONBLOCK) {
         /* provide temporary iovec structure */
-        if (iovcnt > sizeof(tiov_stack)) {
+        if ((size_t)iovcnt > sizeof(tiov_stack)) {
             tiovcnt = (sizeof(struct iovec) * UIO_MAXIOV);
             if ((tiov = (struct iovec *)malloc(tiovcnt)) == NULL)
                 return pth_error(-1, errno);
@@ -1076,7 +1076,7 @@ ssize_t pth_writev_ev(int fd, const struct iovec *iov, int iovcnt, pth_event_t e
                     pth_event_isolate(ev);
                     if (pth_event_status(ev) != PTH_STATUS_OCCURRED) {
                         pth_fdmode(fd, fdmode);
-                        if (iovcnt > sizeof(tiov_stack))
+                        if ((size_t)iovcnt > sizeof(tiov_stack))
                             free(tiov);
                         return pth_error(-1, EINTR);
                     }
@@ -1113,7 +1113,7 @@ ssize_t pth_writev_ev(int fd, const struct iovec *iov, int iovcnt, pth_event_t e
         }
 
         /* cleanup */
-        if (iovcnt > sizeof(tiov_stack))
+        if ((size_t)iovcnt > sizeof(tiov_stack))
             free(tiov);
     }
     else {
@@ -1135,7 +1135,7 @@ ssize_t pth_writev_ev(int fd, const struct iovec *iov, int iovcnt, pth_event_t e
 }
 
 /* calculate number of bytes in a struct iovec */
-intern ssize_t pth_writev_iov_bytes(const struct iovec *iov, int iovcnt)
+ssize_t pth_writev_iov_bytes(const struct iovec *iov, int iovcnt)
 {
     ssize_t bytes;
     int i;
@@ -1150,11 +1150,12 @@ intern ssize_t pth_writev_iov_bytes(const struct iovec *iov, int iovcnt)
 }
 
 /* advance the virtual pointer of a struct iov */
-intern void pth_writev_iov_advance(const struct iovec *riov, int riovcnt, size_t advance,
+void pth_writev_iov_advance(const struct iovec *riov, int riovcnt, size_t advance,
                                    struct iovec **liov, int *liovcnt,
                                    struct iovec *tiov, int tiovcnt)
 {
     int i;
+    (void)tiovcnt; /* Parameter is unused but kept for API consistency */
 
     if (*liov == NULL && *liovcnt == 0) {
         /* initialize with real (const) structure on first step */
@@ -1188,7 +1189,7 @@ intern void pth_writev_iov_advance(const struct iovec *riov, int riovcnt, size_t
 }
 
 /* A faked version of writev(2) */
-intern ssize_t pth_writev_faked(int fd, const struct iovec *iov, int iovcnt)
+ssize_t pth_writev_faked(int fd, const struct iovec *iov, int iovcnt)
 {
     char *buffer, *cp;
     size_t bytes, to_copy, copy, rv;

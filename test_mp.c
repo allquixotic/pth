@@ -54,6 +54,7 @@ static void worker_cleanup(void *arg)
 }
 static void *worker(void *_dummy)
 {
+    (void)_dummy;
     worker_cleanup_t wc;
     pth_msgport_t mp;
     pth_event_t ev;
@@ -81,6 +82,7 @@ static void *worker(void *_dummy)
 /* a useless ticker thread */
 static void *ticker(void *_arg)
 {
+    (void)_arg;
     time_t now;
     fprintf(stderr, "ticker: start\n");
     for (;;) {
@@ -96,6 +98,7 @@ static void *ticker(void *_arg)
 
 int main(int argc, char *argv[])
 {
+    (void)argc; (void)argv;
     char caLine[MAXLINELEN];
     pth_event_t ev = NULL;
     pth_event_t evt = NULL;

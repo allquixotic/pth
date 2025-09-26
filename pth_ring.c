@@ -42,7 +42,7 @@
 #include "pth_p.h"
 
 /* initialize ring; O(1) */
-intern void pth_ring_init(pth_ring_t *r)
+static void pth_ring_init(pth_ring_t *r)
 {
     if (r == NULL)
         return;
@@ -54,7 +54,13 @@ intern void pth_ring_init(pth_ring_t *r)
 /* return number of nodes in ring; O(1) */
 #if cpp
 #define pth_ring_elements(r) \
-    ((r) == NULL ? (-1) : (r)->r_nodes)
+    ({ pth_ring_t *_r = (r); \
+       int _result; \
+       if (_r == NULL) \
+           _result = -1; \
+       else \
+           _result = (int)(_r->r_nodes); \
+       _result; })
 #endif
 
 /* return first node in ring; O(1) */
@@ -88,7 +94,7 @@ intern void pth_ring_init(pth_ring_t *r)
 #endif
 
 /* insert node after a second node in ring; O(1) */
-intern void pth_ring_insert_after(pth_ring_t *r, pth_ringnode_t *rn1, pth_ringnode_t *rn2)
+static void pth_ring_insert_after(pth_ring_t *r, pth_ringnode_t *rn1, pth_ringnode_t *rn2)
 {
     if (r == NULL || rn1 == NULL || rn2 == NULL)
         return;
@@ -101,7 +107,7 @@ intern void pth_ring_insert_after(pth_ring_t *r, pth_ringnode_t *rn1, pth_ringno
 }
 
 /* insert node before a second node in ring; O(1) */
-intern void pth_ring_insert_before(pth_ring_t *r, pth_ringnode_t *rn1, pth_ringnode_t *rn2)
+static void pth_ring_insert_before(pth_ring_t *r, pth_ringnode_t *rn1, pth_ringnode_t *rn2)
 {
     if (r == NULL || rn1 == NULL || rn2 == NULL)
         return;
@@ -114,7 +120,7 @@ intern void pth_ring_insert_before(pth_ring_t *r, pth_ringnode_t *rn1, pth_ringn
 }
 
 /* delete an node from ring; O(1) */
-intern void pth_ring_delete(pth_ring_t *r, pth_ringnode_t *rn)
+static void pth_ring_delete(pth_ring_t *r, pth_ringnode_t *rn)
 {
     if (r == NULL || rn == NULL)
         return;
@@ -131,7 +137,7 @@ intern void pth_ring_delete(pth_ring_t *r, pth_ringnode_t *rn)
 }
 
 /* prepend an node to ring; O(1) */
-intern void pth_ring_prepend(pth_ring_t *r, pth_ringnode_t *rn)
+static void pth_ring_prepend(pth_ring_t *r, pth_ringnode_t *rn)
 {
     if (r == NULL || rn == NULL)
         return;
@@ -152,7 +158,7 @@ intern void pth_ring_prepend(pth_ring_t *r, pth_ringnode_t *rn)
 }
 
 /* append an node to ring; O(1) */
-intern void pth_ring_append(pth_ring_t *r, pth_ringnode_t *rn)
+static void pth_ring_append(pth_ring_t *r, pth_ringnode_t *rn)
 {
     if (r == NULL || rn == NULL)
         return;
@@ -178,7 +184,7 @@ intern void pth_ring_append(pth_ring_t *r, pth_ringnode_t *rn)
 #endif
 
 /* treat ring as stack: pop node from stack; O(1) */
-intern pth_ringnode_t *pth_ring_pop(pth_ring_t *r)
+static pth_ringnode_t *pth_ring_pop(pth_ring_t *r)
 {
     pth_ringnode_t *rn;
 
@@ -189,7 +195,7 @@ intern pth_ringnode_t *pth_ring_pop(pth_ring_t *r)
 }
 
 /* treat ring as queue: favorite a node in the ring; O(1) */
-intern int pth_ring_favorite(pth_ring_t *r, pth_ringnode_t *rn)
+static int pth_ring_favorite(pth_ring_t *r, pth_ringnode_t *rn)
 {
     if (r == NULL)
         return FALSE;
@@ -211,7 +217,7 @@ intern int pth_ring_favorite(pth_ring_t *r, pth_ringnode_t *rn)
 #endif
 
 /* treat ring as queue: dequeue node; O(1) */
-intern pth_ringnode_t *pth_ring_dequeue(pth_ring_t *r)
+static pth_ringnode_t *pth_ring_dequeue(pth_ring_t *r)
 {
     pth_ringnode_t *rn;
 
@@ -222,7 +228,7 @@ intern pth_ringnode_t *pth_ring_dequeue(pth_ring_t *r)
 }
 
 /* check whether node is contained in ring; O(n) */
-intern int pth_ring_contains(pth_ring_t *r, pth_ringnode_t *rns)
+static int pth_ring_contains(pth_ring_t *r, pth_ringnode_t *rns)
 {
     pth_ringnode_t *rn;
     int rc;

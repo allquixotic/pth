@@ -70,7 +70,7 @@ int pth_cleanup_pop(int execute)
     return rc;
 }
 
-intern void pth_cleanup_popall(pth_t t, int execute)
+void pth_cleanup_popall(pth_t t, int execute)
 {
     pth_cleanup_t *cleanup;
 

@@ -36,7 +36,7 @@ long pth_version(void)
 }
 
 /* implicit initialization support */
-intern int pth_initialized = FALSE;
+int pth_initialized = FALSE;
 #if cpp
 #define pth_implicit_init() \
     if (!pth_initialized) \
@@ -366,7 +366,7 @@ int pth_raise(pth_t t, int sig)
 }
 
 /* check whether a thread exists */
-intern int pth_thread_exists(pth_t t)
+int pth_thread_exists(pth_t t)
 {
     if (!pth_pqueue_contains(&pth_NQ, t))
         if (!pth_pqueue_contains(&pth_RQ, t))
@@ -378,7 +378,7 @@ intern int pth_thread_exists(pth_t t)
 }
 
 /* cleanup a particular thread */
-intern void pth_thread_cleanup(pth_t thread)
+void pth_thread_cleanup(pth_t thread)
 {
     /* run the cleanup handlers */
     if (thread->cleanups != NULL)
@@ -397,6 +397,7 @@ intern void pth_thread_cleanup(pth_t thread)
 /* terminate the current thread */
 static int pth_exit_cb(void *arg)
 {
+    (void)arg;
     int rc;
 
     /* BE CAREFUL HERE: THIS FUNCTION EXECUTES

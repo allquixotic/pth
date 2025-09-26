@@ -235,9 +235,16 @@ When approaching context limits (~80% of conversation):
 ## Progress Tracking
 
 ### Current Work
-- **Active Task**: None (awaiting first iteration)
-- **Current Phase**: Phase 1.1 - pth_p.h resolution
-- **Blockers**: BLOCKER #1 (pth_p.h) must be resolved first
+- **Active Task**: Fixing remaining compilation issues (function signatures, missing macros)
+- **Current Phase**: Phase 1.1 - pth_p.h resolution (90% complete)
+- **Progress**:
+  - ✓ Extracted all 27 #if cpp blocks to temp file
+  - ✓ Created new pth_p.h with proper ordering (constants, types, structs, externs, macros)
+  - ✓ Added pth_mctx_t definition
+  - ✓ Replaced all `intern` keywords with `static` (95 instances)
+  - ✓ Fixed 40+ static/extern linkage conflicts by removing static from cross-file functions
+  - ✓ Added missing declarations: pth_snprintf, pth_vsnprintf, pth_tcb_alloc, pth_tcb_free, pth_mctx_set, pth_time_cmp, pth_mutex_releaseall, pth_util_sigdelete, pth_time_zero, pth_time_set macro, pth_sc macro
+  - Need to fix: pth_writev_iov_advance signature, add pth_mctx_switch macro
 
 ### Phase 1 Progress
 - [x] Initial meson.build created

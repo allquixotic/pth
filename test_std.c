@@ -80,6 +80,7 @@ static void *t2_func(void *arg)
 
 int main(int argc, char *argv[])
 {
+    (void)argc; (void)argv;
     fprintf(stderr, "\n=== TESTING GLOBAL LIBRARY API ===\n\n");
     {
         int version;

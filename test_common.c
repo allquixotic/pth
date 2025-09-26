@@ -58,6 +58,7 @@ static void readline_buf_destroy(void *vp)
 
 static void readline_init(void *vp)
 {
+    (void)vp;
     pth_key_create(&readline_key, readline_buf_destroy);
     return;
 }

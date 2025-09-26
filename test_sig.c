@@ -34,6 +34,7 @@
 
 static void *sigdriver(void *_)
 {
+    (void)_;
     int i;
     for (i = 0; i < 3; i++) {
         pth_sleep(1);
@@ -48,6 +49,7 @@ static pth_t child2;
 
 static void *inthandler(void *_arg)
 {
+    (void)_arg;
     sigset_t sigs;
     int sig;
     int n;
@@ -121,6 +123,7 @@ static void *child(void *_arg)
 
 int main(int argc, char *argv[])
 {
+    (void)argc; (void)argv;
     pth_attr_t attr;
     sigset_t sigs;
 

@@ -35,6 +35,7 @@ pth_mutex_t mutex = PTH_MUTEX_INIT;
 
 static void *my_reader(void *_arg)
 {
+    (void)_arg;
     char buf[3];
     int n;
 
@@ -86,6 +87,7 @@ static void *my_child(void *_arg)
 
 int main(int argc, char *argv[])
 {
+    (void)argc; (void)argv;
     pth_t child[10];
     pth_attr_t t_attr;
     pth_attr_t t_attr2;

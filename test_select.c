@@ -49,6 +49,7 @@ static void *writer(void *arg)
 /* a useless ticker thread */
 static void *ticker(void *_arg)
 {
+    (void)_arg;
     time_t now;
     fprintf(stderr, "ticker: start\n");
     for (;;) {
@@ -62,6 +63,8 @@ static void *ticker(void *_arg)
 
 int main(int argc, char *argv[])
 {
+    (void)argc;
+    (void)argv;
     pth_event_t evt;
     pth_t t_ticker;
     pth_attr_t t_attr;

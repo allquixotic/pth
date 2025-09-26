@@ -120,9 +120,9 @@ dopr(
     max = -1;
     ch = *format++;
 
-    if (maxlen == -1)
-        /* possible maximum size in a size_t (size_t unfortunately could be signed) */
-        maxlen = (~(((size_t)1)<<((sizeof(size_t)*8)-1)));
+    if (maxlen == (size_t)-1)
+        /* possible maximum size in a size_t */
+        maxlen = SIZE_MAX;
 
     while (state != DP_S_DONE) {
         if ((ch == NUL) || (currlen >= maxlen))
@@ -275,6 +275,7 @@ dopr(
                 break;
             case 'E':
                 flags |= DP_F_UP;
+                /* fall through */
             case 'e':
                 if (cflags == DP_C_LDOUBLE)
                     fvalue = va_arg(args, LDOUBLE);
@@ -283,6 +284,7 @@ dopr(
                 break;
             case 'G':
                 flags |= DP_F_UP;
+                /* fall through */
             case 'g':
                 if (cflags == DP_C_LDOUBLE)
                     fvalue = va_arg(args, LDOUBLE);
@@ -644,7 +646,7 @@ dopr_outch(
     return;
 }
 
-intern int
+int
 pth_vsnprintf(
     char *str,
     size_t count,
@@ -659,7 +661,7 @@ pth_vsnprintf(
     return retlen;
 }
 
-intern int
+int
 pth_snprintf(
     char *str,
     size_t count,
@@ -675,7 +677,7 @@ pth_snprintf(
     return rv;
 }
 
-intern char *
+static char *
 pth_vasprintf(
     const char *fmt,
     va_list ap)
@@ -690,7 +692,7 @@ pth_vasprintf(
     return rv;
 }
 
-intern char *
+static char *
 pth_asprintf(
     const char *fmt,
     ...)

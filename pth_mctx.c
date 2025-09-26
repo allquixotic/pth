@@ -156,7 +156,7 @@ struct pth_mctx_st {
  * straight-foreward.
  */
 
-intern int pth_mctx_set(
+int pth_mctx_set(
     pth_mctx_t *mctx, void (*func)(void), char *sk_addr_lo, char *sk_addr_hi)
 {
     /* fetch current context */
@@ -228,7 +228,7 @@ static void pth_mctx_set_trampoline(int);
 static void pth_mctx_set_bootstrap(void);
 
 /* initialize a machine state */
-intern int pth_mctx_set(
+int pth_mctx_set(
     pth_mctx_t *mctx, void (*func)(void), char *sk_addr_lo, char *sk_addr_hi)
 {
     struct sigaction sa;
@@ -461,7 +461,7 @@ static void pth_mctx_set_bootstrap(void)
 
 #include <features.h>
 
-intern int pth_mctx_set(
+int pth_mctx_set(
     pth_mctx_t *mctx, void (*func)(void), char *sk_addr_lo, char *sk_addr_hi)
 {
     pth_mctx_save(mctx);
@@ -495,7 +495,7 @@ intern int pth_mctx_set(
  */
 
 #elif PTH_MCTX_MTH(sjlj) && PTH_MCTX_DSP(sjljisc)
-intern int
+static int
 pth_mctx_set(pth_mctx_t *mctx, void (*func)(void),
                      char *sk_addr_lo, char *sk_addr_hi)
 {
@@ -519,7 +519,7 @@ pth_mctx_set(pth_mctx_t *mctx, void (*func)(void),
  */
 
 #elif PTH_MCTX_MTH(sjlj) && PTH_MCTX_DSP(sjljw32)
-intern int
+static int
 pth_mctx_set(pth_mctx_t *mctx, void (*func)(void),
                      char *sk_addr_lo, char *sk_addr_hi)
 {
@@ -540,7 +540,7 @@ pth_mctx_set(pth_mctx_t *mctx, void (*func)(void),
  * Add the jmp_buf fiddling for your esoteric OS here...
  *
 #elif PTH_MCTX_MTH(sjlj) && PTH_MCTX_DSP(sjljeso)
-intern int
+static int
 pth_mctx_set(pth_mctx_t *mctx, void (*func)(void),
              char *sk_addr_lo, char *sk_addr_hi)
 {

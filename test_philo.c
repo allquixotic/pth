@@ -129,6 +129,8 @@ static void *philosopher(void *_who)
 
 int main(int argc, char *argv[])
 {
+    (void)argc;
+    (void)argv;
     int i;
     sigset_t ss;
     int sig;

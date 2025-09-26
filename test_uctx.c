@@ -107,6 +107,7 @@ volatile int stat_switched;
 
 static void dummy(void *ctx)
 {
+    (void)ctx;
     while (1) {
         stat_switched++;
         pth_uctx_switch(uctx[1], uctx[0]);
@@ -145,6 +146,8 @@ static void test_performance(void)
 
 int main(int argc, char *argv[])
 {
+    (void)argc;
+    (void)argv;
     test_working();
     test_performance();
     return 0;

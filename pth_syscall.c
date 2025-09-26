@@ -133,7 +133,7 @@ static pth_syscall_lib_tab_t pth_syscall_lib_tab[128] = {
 };
 
 /* table of syscalls and their resolved function pointers */
-intern pth_syscall_fct_tab_t pth_syscall_fct_tab[] = {
+static pth_syscall_fct_tab_t pth_syscall_fct_tab[] = {
     /* Notice: order must match the macro values above */
 #define PTH_SCF_fork          0
 #define PTH_SCF_waitpid       1
@@ -184,7 +184,7 @@ intern pth_syscall_fct_tab_t pth_syscall_fct_tab[] = {
 #endif
 
 /* syscall wrapping initialization */
-intern void pth_syscall_init(void)
+static void pth_syscall_init(void)
 {
 #if PTH_SYSCALL_HARD
     int i;
@@ -255,7 +255,7 @@ intern void pth_syscall_init(void)
 }
 
 /* syscall wrapping initialization */
-intern void pth_syscall_kill(void)
+static void pth_syscall_kill(void)
 {
 #if PTH_SYSCALL_HARD
     int i;
@@ -295,7 +295,7 @@ pid_t fork(void)
     pth_implicit_init();
     return pth_fork();
 }
-intern pid_t pth_sc_fork(void)
+static pid_t pth_sc_fork(void)
 {
     /* internal exit point for Pth */
     if (pth_syscall_fct_tab[PTH_SCF_fork].addr != NULL)
@@ -361,7 +361,7 @@ int sigprocmask(int how, const sigset_t *set, sigset_t *oset)
     pth_implicit_init();
     return pth_sigmask(how, set, oset);
 }
-intern int pth_sc_sigprocmask(int how, const sigset_t *set, sigset_t *oset)
+static int pth_sc_sigprocmask(int how, const sigset_t *set, sigset_t *oset)
 {
     /* internal exit point for Pth */
     if (pth_syscall_fct_tab[PTH_SCF_sigprocmask].addr != NULL)
@@ -396,7 +396,7 @@ pid_t waitpid(pid_t wpid, int *status, int options)
     pth_implicit_init();
     return pth_waitpid(wpid, status, options);
 }
-intern pid_t pth_sc_waitpid(pid_t wpid, int *status, int options)
+static pid_t pth_sc_waitpid(pid_t wpid, int *status, int options)
 {
     /* internal exit point for Pth */
     if (pth_syscall_fct_tab[PTH_SCF_waitpid].addr != NULL)
@@ -418,7 +418,7 @@ int connect(int s, const struct sockaddr *addr, socklen_t addrlen)
     pth_implicit_init();
     return pth_connect(s, addr, addrlen);
 }
-intern int pth_sc_connect(int s, const struct sockaddr *addr, socklen_t addrlen)
+static int pth_sc_connect(int s, const struct sockaddr *addr, socklen_t addrlen)
 {
     /* internal exit point for Pth */
     if (pth_syscall_fct_tab[PTH_SCF_connect].addr != NULL)
@@ -448,7 +448,7 @@ int accept(int s, struct sockaddr *addr, socklen_t *addrlen)
     pth_implicit_init();
     return pth_accept(s, addr, addrlen);
 }
-intern int pth_sc_accept(int s, struct sockaddr *addr, socklen_t *addrlen)
+static int pth_sc_accept(int s, struct sockaddr *addr, socklen_t *addrlen)
 {
     /* internal exit point for Pth */
     if (pth_syscall_fct_tab[PTH_SCF_accept].addr != NULL)
@@ -479,7 +479,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds,
     pth_implicit_init();
     return pth_select(nfds, readfds, writefds, exceptfds, timeout);
 }
-intern int pth_sc_select(int nfds, fd_set *readfds, fd_set *writefds,
+static int pth_sc_select(int nfds, fd_set *readfds, fd_set *writefds,
                          fd_set *exceptfds, struct timeval *timeout)
 {
     /* internal exit point for Pth */
@@ -527,7 +527,7 @@ ssize_t read(int fd, void *buf, size_t nbytes)
     pth_implicit_init();
     return pth_read(fd, buf, nbytes);
 }
-intern ssize_t pth_sc_read(int fd, void *buf, size_t nbytes)
+static ssize_t pth_sc_read(int fd, void *buf, size_t nbytes)
 {
     /* internal exit point for Pth */
     if (pth_syscall_fct_tab[PTH_SCF_read].addr != NULL)
@@ -549,7 +549,7 @@ ssize_t write(int fd, const void *buf, size_t nbytes)
     pth_implicit_init();
     return pth_write(fd, buf, nbytes);
 }
-intern ssize_t pth_sc_write(int fd, const void *buf, size_t nbytes)
+static ssize_t pth_sc_write(int fd, const void *buf, size_t nbytes)
 {
     /* internal exit point for Pth */
     if (pth_syscall_fct_tab[PTH_SCF_write].addr != NULL)
@@ -571,7 +571,7 @@ ssize_t readv(int fd, const struct iovec *iov, int iovcnt)
     pth_implicit_init();
     return pth_readv(fd, iov, iovcnt);
 }
-intern ssize_t pth_sc_readv(int fd, const struct iovec *iov, int iovcnt)
+static ssize_t pth_sc_readv(int fd, const struct iovec *iov, int iovcnt)
 {
     /* internal exit point for Pth */
     if (pth_syscall_fct_tab[PTH_SCF_readv].addr != NULL)
@@ -593,7 +593,7 @@ ssize_t writev(int fd, const struct iovec *iov, int iovcnt)
     pth_implicit_init();
     return pth_writev(fd, iov, iovcnt);
 }
-intern ssize_t pth_sc_writev(int fd, const struct iovec *iov, int iovcnt)
+static ssize_t pth_sc_writev(int fd, const struct iovec *iov, int iovcnt)
 {
     /* internal exit point for Pth */
     if (pth_syscall_fct_tab[PTH_SCF_writev].addr != NULL)
@@ -637,7 +637,7 @@ ssize_t recv(int fd, void *buf, size_t nbytes, int flags)
     pth_implicit_init();
     return pth_recv(fd, buf, nbytes, flags);
 }
-intern ssize_t pth_sc_recv(int fd, void *buf, size_t nbytes, int flags)
+static ssize_t pth_sc_recv(int fd, void *buf, size_t nbytes, int flags)
 {
     /* internal exit point for Pth */
     if (pth_syscall_fct_tab[PTH_SCF_recv].addr != NULL)
@@ -661,7 +661,7 @@ ssize_t send(int fd, void *buf, size_t nbytes, int flags)
     pth_implicit_init();
     return pth_send(fd, buf, nbytes, flags);
 }
-intern ssize_t pth_sc_send(int fd, void *buf, size_t nbytes, int flags)
+static ssize_t pth_sc_send(int fd, void *buf, size_t nbytes, int flags)
 {
     /* internal exit point for Pth */
     if (pth_syscall_fct_tab[PTH_SCF_send].addr != NULL)
@@ -685,7 +685,7 @@ ssize_t recvfrom(int fd, void *buf, size_t nbytes, int flags, struct sockaddr *f
     pth_implicit_init();
     return pth_recvfrom(fd, buf, nbytes, flags, from, fromlen);
 }
-intern ssize_t pth_sc_recvfrom(int fd, void *buf, size_t nbytes, int flags, struct sockaddr *from, socklen_t *fromlen)
+static ssize_t pth_sc_recvfrom(int fd, void *buf, size_t nbytes, int flags, struct sockaddr *from, socklen_t *fromlen)
 {
     /* internal exit point for Pth */
     if (pth_syscall_fct_tab[PTH_SCF_recvfrom].addr != NULL)
@@ -707,7 +707,7 @@ ssize_t sendto(int fd, const void *buf, size_t nbytes, int flags, const struct s
     pth_implicit_init();
     return pth_sendto(fd, buf, nbytes, flags, to, tolen);
 }
-intern ssize_t pth_sc_sendto(int fd, const void *buf, size_t nbytes, int flags, const struct sockaddr *to, socklen_t tolen)
+static ssize_t pth_sc_sendto(int fd, const void *buf, size_t nbytes, int flags, const struct sockaddr *to, socklen_t tolen)
 {
     /* internal exit point for Pth */
     if (pth_syscall_fct_tab[PTH_SCF_sendto].addr != NULL)

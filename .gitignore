@@ -1,6 +1,6 @@
 # GNU Pth - Generated Files to Ignore
 
-# Autotools generated files
+# Autotools generated files (legacy)
 /configure
 /config.guess
 /config.sub
@@ -11,17 +11,27 @@
 /ltmain.sh
 /aclocal.m4
 /autom4te.cache/
-/config.h
-/config.h.in
-/config.h.in~
 /config.log
 /config.status
 /stamp-h1
 /libtool
 
-# Automake/Makefile generated files
+# Automake/Makefile generated files (legacy)
 /Makefile
 /Makefile.in
+
+# Meson build system
+/builddir/
+/build/
+/meson-logs/
+/meson-private/
+/.mesonpy-*/
+/compile_commands.json
+
+# Generated configuration headers
+/config.h
+/config.h.in
+/config.h.in~
 
 # Autoheader generated files
 /pth_acdef.h
