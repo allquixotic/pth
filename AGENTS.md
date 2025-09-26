@@ -24,7 +24,10 @@ Modernize GNU Pth 2.0.7 to:
 - Initial meson.build created (not yet functional)
 - Test files cleaned up (unused parameter warnings)
 - Git repository initialized with meaningful commits
-- Some code style improvements in progress
+- pth_mctx_switch macro added to pth_p.h
+- Function signature fixes: pth_scheduler, pth_writev_iov_advance
+- Static/extern linkage conflicts resolved in pth_pqueue.c and pth_ring.c
+- Empty-body warnings fixed in pth_lib.c
 
 ### Critical Blockers ✗
 
@@ -235,8 +238,8 @@ When approaching context limits (~80% of conversation):
 ## Progress Tracking
 
 ### Current Work
-- **Active Task**: Fixing remaining compilation issues (function signatures, missing macros)
-- **Current Phase**: Phase 1.1 - pth_p.h resolution (90% complete)
+- **Active Task**: Fixing remaining compilation issues (missing declarations, unused functions)
+- **Current Phase**: Phase 1.1 - pth_p.h resolution (93% complete)
 - **Progress**:
   - ✓ Extracted all 27 #if cpp blocks to temp file
   - ✓ Created new pth_p.h with proper ordering (constants, types, structs, externs, macros)
@@ -244,7 +247,12 @@ When approaching context limits (~80% of conversation):
   - ✓ Replaced all `intern` keywords with `static` (95 instances)
   - ✓ Fixed 40+ static/extern linkage conflicts by removing static from cross-file functions
   - ✓ Added missing declarations: pth_snprintf, pth_vsnprintf, pth_tcb_alloc, pth_tcb_free, pth_mctx_set, pth_time_cmp, pth_mutex_releaseall, pth_util_sigdelete, pth_time_zero, pth_time_set macro, pth_sc macro
-  - Need to fix: pth_writev_iov_advance signature, add pth_mctx_switch macro
+  - ✓ Fixed pth_writev_iov_advance signature (7 params, not 5)
+  - ✓ Added pth_mctx_switch macro to pth_p.h
+  - ✓ Fixed pth_scheduler signature: void* (void*) not void (void)
+  - ✓ Removed static from pth_pqueue and pth_ring functions
+  - ✓ Fixed empty-body warnings in pth_lib.c
+  - Need to fix: pth_util_fds_* declarations, unused function warnings in pth_sched.c and pth_string.c
 
 ### Phase 1 Progress
 - [x] Initial meson.build created
