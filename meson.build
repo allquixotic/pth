@@ -7,7 +7,7 @@ project('gnu-pth', 'c',
     'werror=true',
     'optimization=2',
   ],
-  meson_version: '>= 0.56.0'
+  meson_version: '>= 1.0'
 )
 
 cc = meson.get_compiler('c')
@@ -97,21 +97,8 @@ foreach f : required_functions
   endif
 endforeach
 
-# Check for context switching functions
-have_mcsc = false
-if cc.has_header('ucontext.h')
-  if cc.has_function('getcontext') and cc.has_function('makecontext') and cc.has_function('swapcontext')
-    conf_data.set('HAVE_MCSC', 1)
-    conf_data.set('HAVE_GETCONTEXT', 1)
-    conf_data.set('HAVE_MAKECONTEXT', 1)
-    conf_data.set('HAVE_SWAPCONTEXT', 1)
-    have_mcsc = true
-  endif
-endif
-
-if not have_mcsc
-  conf_data.set('HAVE_SJLJ', 1)
-endif
+# Use custom x86_64 assembly for context switching
+conf_data.set('HAVE_SJLJ', 1)
 
 # Check for optional functions
 optional_functions = [
@@ -146,13 +133,8 @@ endforeach
 
 # Add PTH-specific configuration
 acdef_data.set('PTH_MCTX_DSP_use', 'PTH_MCTX_DSP_sc')
-if have_mcsc
-  acdef_data.set('PTH_MCTX_MTH_use', 'PTH_MCTX_MTH_mcsc')
-  acdef_data.set('PTH_MCTX_STK_use', 'PTH_MCTX_STK_mc')
-else
-  acdef_data.set('PTH_MCTX_MTH_use', 'PTH_MCTX_MTH_sjlj')
-  acdef_data.set('PTH_MCTX_STK_use', 'PTH_MCTX_STK_sas')
-endif
+acdef_data.set('PTH_MCTX_MTH_use', 'PTH_MCTX_MTH_sjlj')
+acdef_data.set('PTH_MCTX_STK_use', 'PTH_MCTX_STK_sas')
 acdef_data.set('PTH_NSIG', 32)
 acdef_data.set('PTH_STACKGROWTH', -1)
 acdef_data.set_quoted('PTH_SYSCALL_LIBS', '')
@@ -160,7 +142,9 @@ acdef_data.set_quoted('PTH_SYSCALL_LIBS', '')
 configure_file(
   input: 'src/pth_acdef.h.in',
   output: 'pth_acdef.h',
-  configuration: acdef_data
+  configuration: acdef_data,
+  install: true,
+  install_dir: get_option('includedir')
 )
 
 # Include directories
@@ -280,7 +264,7 @@ pkg.generate(
 
 # Summary
 summary({
-  'Machine context method': have_mcsc ? 'MCSC (makecontext/swapcontext)' : 'SJLJ (setjmp/longjmp)',
+  'Machine context method': 'Custom x86_64 assembly',
   'C standard': 'C17',
   'Prefix': get_option('prefix'),
   'Library directory': get_option('libdir'),

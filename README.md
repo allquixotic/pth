@@ -34,6 +34,22 @@ This is a modernized version of GNU Pth 2.0.7, updated to:
 
 The library consists of approximately 8,500 lines of C17 code, built with approximately 260 lines of meson.build configuration. All 26 source files compile cleanly, and all 10 test programs pass automatically.
 
+## Building
+
+Quick build using Make wrapper:
+```bash
+make        # Build library
+make test   # Build and run all tests
+make clean  # Clean build directory
+```
+
+Or use meson/ninja directly:
+```bash
+meson setup build
+ninja -C build
+meson test -C build
+```
+
 ## Target Platform
 
 This modernized version targets:
