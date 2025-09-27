@@ -231,6 +231,8 @@ tests = {
   'test_sfio': ['test_sfio.c'],
   'test_uctx': ['test_uctx.c'],
   'test_pthread': ['test_pthread.c'],
+  'test_coverage': ['test_coverage.c'],
+  'test_io': ['test_io.c'],
 }
 
 foreach test_name, test_sources : tests
