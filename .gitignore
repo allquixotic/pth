@@ -75,8 +75,15 @@
 # Static analysis files
 /compile_commands.json
 /clang-tidy-analysis.txt
-/cppcheck-analysis.xml
-/cppcheck-summary.txt
+cppcheck-analysis.xml
+cppcheck-summary.txt
+
+# Coverage analysis files
+*.gcov
+*.gcda
+*.gcno
+/coverage_report.txt
+/COVERAGE_ANALYSIS.md
 
 # Backup and temporary files
 *~

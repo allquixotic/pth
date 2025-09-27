@@ -267,22 +267,22 @@
 #undef PTH_EX
 
 /* define for machine context dispatching */
-#undef PTH_MCTX_DSP_use
+#mesondefine PTH_MCTX_DSP_use
 
 /* define for machine context method */
-#undef PTH_MCTX_MTH_use
+#mesondefine PTH_MCTX_MTH_use
 
 /* define for machine context stack */
-#undef PTH_MCTX_STK_use
+#mesondefine PTH_MCTX_STK_use
 
 /* define for number of signals */
-#undef PTH_NSIG
+#mesondefine PTH_NSIG
 
 /* define for stack growth */
-#undef PTH_STACKGROWTH
+#mesondefine PTH_STACKGROWTH
 
 /* define for the paths to syscall dynamic libraries */
-#undef PTH_SYSCALL_LIBS
+#mesondefine PTH_SYSCALL_LIBS
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

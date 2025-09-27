@@ -144,14 +144,27 @@ foreach key : conf_data.keys()
   endif
 endforeach
 
+# Add PTH-specific configuration
+acdef_data.set('PTH_MCTX_DSP_use', 'PTH_MCTX_DSP_sc')
+if have_mcsc
+  acdef_data.set('PTH_MCTX_MTH_use', 'PTH_MCTX_MTH_mcsc')
+  acdef_data.set('PTH_MCTX_STK_use', 'PTH_MCTX_STK_mc')
+else
+  acdef_data.set('PTH_MCTX_MTH_use', 'PTH_MCTX_MTH_sjlj')
+  acdef_data.set('PTH_MCTX_STK_use', 'PTH_MCTX_STK_sas')
+endif
+acdef_data.set('PTH_NSIG', 32)
+acdef_data.set('PTH_STACKGROWTH', -1)
+acdef_data.set_quoted('PTH_SYSCALL_LIBS', '')
+
 configure_file(
-  input: 'pth_acdef.h.in',
+  input: 'src/pth_acdef.h.in',
   output: 'pth_acdef.h',
   configuration: acdef_data
 )
 
 # Include directories
-inc_dirs = include_directories('.')
+inc_dirs = include_directories('.', 'src')
 
 # Compiler flags for C17
 add_project_arguments(
@@ -165,32 +178,32 @@ add_project_arguments(
 
 # Library sources
 pth_sources = files(
-  'pth_attr.c',
-  'pth_cancel.c',
-  'pth_clean.c',
-  'pth_compat.c',
-  'pth_data.c',
-  'pth_debug.c',
-  'pth_errno.c',
-  'pth_event.c',
-  'pth_ext.c',
-  'pth_fork.c',
-  'pth_high.c',
-  'pth_lib.c',
-  'pth_mctx.c',
-  'pth_mctx_swap.S',
-  'pth_msg.c',
-  'pth_pqueue.c',
-  'pth_ring.c',
-  'pth_sched.c',
-  'pth_string.c',
-  'pth_sync.c',
-  'pth_syscall.c',
-  'pth_tcb.c',
-  'pth_time.c',
-  'pth_uctx.c',
-  'pth_util.c',
-  'pth_vers.c',
+  'src/pth_attr.c',
+  'src/pth_cancel.c',
+  'src/pth_clean.c',
+  'src/pth_compat.c',
+  'src/pth_data.c',
+  'src/pth_debug.c',
+  'src/pth_errno.c',
+  'src/pth_event.c',
+  'src/pth_ext.c',
+  'src/pth_fork.c',
+  'src/pth_high.c',
+  'src/pth_lib.c',
+  'src/pth_mctx.c',
+  'src/pth_mctx_swap.S',
+  'src/pth_msg.c',
+  'src/pth_pqueue.c',
+  'src/pth_ring.c',
+  'src/pth_sched.c',
+  'src/pth_string.c',
+  'src/pth_sync.c',
+  'src/pth_syscall.c',
+  'src/pth_tcb.c',
+  'src/pth_time.c',
+  'src/pth_uctx.c',
+  'src/pth_util.c',
+  'src/pth_vers.c',
 )
 
 # Build shared library
@@ -218,27 +231,27 @@ pth_dep = declare_dependency(
 )
 
 # Test programs
-test_common_src = files('test_common.c')
+test_common_src = files('tests/test_common.c')
 
 tests = {
-  'test_std': ['test_std.c', test_common_src],
-  'test_mp': ['test_mp.c', test_common_src],
-  'test_misc': ['test_misc.c'],
-  'test_philo': ['test_philo.c', test_common_src],
-  'test_sig': ['test_sig.c'],
-  'test_select': ['test_select.c'],
-  'test_httpd': ['test_httpd.c', test_common_src],
-  'test_sfio': ['test_sfio.c'],
-  'test_uctx': ['test_uctx.c'],
-  'test_pthread': ['test_pthread.c'],
-  'test_coverage': ['test_coverage.c'],
-  'test_io': ['test_io.c'],
-  'test_semantics': ['test_semantics.c'],
-  'test_string': ['test_string.c'],
-  'test_events_advanced': ['test_events_advanced.c'],
-  'test_io_ev': ['test_io_ev.c'],
-  'test_fork': ['test_fork.c'],
-  'test_ring': ['test_ring.c'],
+  'test_std': ['tests/test_std.c', test_common_src],
+  'test_mp': ['tests/test_mp.c', test_common_src],
+  'test_misc': ['tests/test_misc.c'],
+  'test_philo': ['tests/test_philo.c', test_common_src],
+  'test_sig': ['tests/test_sig.c'],
+  'test_select': ['tests/test_select.c'],
+  'test_httpd': ['tests/test_httpd.c', test_common_src],
+  'test_sfio': ['tests/test_sfio.c'],
+  'test_uctx': ['tests/test_uctx.c'],
+  'test_pthread': ['tests/test_pthread.c'],
+  'test_coverage': ['tests/test_coverage.c'],
+  'test_io': ['tests/test_io.c'],
+  'test_semantics': ['tests/test_semantics.c'],
+  'test_string': ['tests/test_string.c'],
+  'test_events_advanced': ['tests/test_events_advanced.c'],
+  'test_io_ev': ['tests/test_io_ev.c'],
+  'test_fork': ['tests/test_fork.c'],
+  'test_ring': ['tests/test_ring.c'],
 }
 
 foreach test_name, test_sources : tests
