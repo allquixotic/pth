@@ -48,6 +48,7 @@
  */
 
 #include "pth_p.h"
+#include <limits.h>
 
 #define LLONG long long
 
@@ -117,7 +118,7 @@ dopr(
         maxlen = SIZE_MAX;
 
     while (state != DP_S_DONE) {
-        if ((ch == NUL) || (currlen >= maxlen))
+        if (ch == NUL)
             state = DP_S_DONE;
 
         switch (state) {
@@ -289,7 +290,7 @@ dopr(
             case 's':
                 strvalue = va_arg(args, char *);
                 if (max < 0)
-                    max = maxlen;
+                    max = INT_MAX;
                 fmtstr(buffer, &currlen, maxlen, strvalue, flags, min, max);
                 break;
             case 'p':
@@ -633,8 +634,8 @@ dopr_outch(
     if (*currlen < maxlen) {
         if (buffer != NULL)
             buffer[(*currlen)] = (char)c;
-        (*currlen)++;
     }
+    (*currlen)++;
     return;
 }
 

@@ -233,6 +233,12 @@ tests = {
   'test_pthread': ['test_pthread.c'],
   'test_coverage': ['test_coverage.c'],
   'test_io': ['test_io.c'],
+  'test_semantics': ['test_semantics.c'],
+  'test_string': ['test_string.c'],
+  'test_events_advanced': ['test_events_advanced.c'],
+  'test_io_ev': ['test_io_ev.c'],
+  'test_fork': ['test_fork.c'],
+  'test_ring': ['test_ring.c'],
 }
 
 foreach test_name, test_sources : tests
